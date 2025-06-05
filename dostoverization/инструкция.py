@@ -6,3 +6,5 @@ width=1200, height=800
 )
 
 ##st.session_state.ff_new
+
+pip install plotly-express
