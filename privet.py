@@ -21,6 +21,6 @@ html_code = """ <iframe frameborder="0" src="https://datalens.yandex/4hvj54abmk6
 components.html(html_code, width=1000, height=300, scrolling=False)
 
 list=[1515,54515,51545,5151514,5154515,5154515,515515]
-list
+st.text(list)
 
 
