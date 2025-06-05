@@ -16,6 +16,6 @@ html_code = """ <iframe frameborder="0" src="https://datalens.yandex/4hvj54abmk6
 
 components.html(html_code, height=500)
 
-html_code = """ <!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <title>Пример встраивания HTML</title> <style> body { background-color: lightblue; font-family: Arial, sans-serif; } h1 { color: navy; } </style> </head> <body> <h1>HTML + CSS в Streamlit</h1> <p>Этот текст демонстрирует возможности встраивания HTML+CSS.</p> </body> </html> """
+html_code = """ <iframe frameborder="0" src="https://datalens.yandex/4hvj54abmk68q?_no_controls=1&_theme=dark"></iframe>"""
 
 components.html(html_code, width=None, height=300, scrolling=False)
