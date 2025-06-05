@@ -19,3 +19,7 @@ components.html(html_code, height=500)
 html_code = """ <iframe frameborder="0" src="https://datalens.yandex/4hvj54abmk68q?_no_controls=1&_theme=dark"></iframe>"""
 
 components.html(html_code, width=1000, height=300, scrolling=False)
+import pandas as pd
+df=pd.Dataframe([1515,51545,515451,515451,545451,51515,515451,5451545,51545151,5154515])
+df
+
