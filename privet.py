@@ -18,4 +18,4 @@ components.html(html_code, height=500)
 
 html_code = """ <iframe frameborder="0" src="https://datalens.yandex/4hvj54abmk68q?_no_controls=1&_theme=dark"></iframe>"""
 
-components.html(html_code, width=None, height=300, scrolling=False)
+components.html(html_code, width=1000, height=300, scrolling=False)
