@@ -14,4 +14,4 @@ import streamlit.components.v1 as components
 
 html_code = """ <iframe frameborder="0" src="https://datalens.yandex/4hvj54abmk68q?_no_controls=1&_theme=dark"></iframe> """
 
-components.html(html_code, height=200)
+components.html(html_code, height=500)
