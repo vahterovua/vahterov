@@ -20,5 +20,5 @@ html_code = """ <iframe frameborder="0" src="https://datalens.yandex/4hvj54abmk6
 
 components.html(html_code, width=1000, height=300, scrolling=False)
 
-a=pip list
-st.text(a)
+
+
