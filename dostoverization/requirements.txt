@@ -1,5 +1,7 @@
 plotly
 openpyxl
+IPython
+
 
 
 
