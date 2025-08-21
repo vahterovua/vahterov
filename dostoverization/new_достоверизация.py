@@ -161,7 +161,7 @@ if "dir_name" in st.session_state:
 
     st.markdown("""**Порядок действий:**""")
     st.markdown("""1. Выгрузить отчёты из пирамиды за предыдущий месяц и переименовать их:""")
-    st.markdown(""" - 30 мин.xlsx""")
+    st.markdown(""" - 30мин.xlsx""")
     st.markdown(""" - мес.xlsx""")
     st.markdown(""" - сут.xlsx""")
     st.markdown("""3. Загрузить все три файла.""")
