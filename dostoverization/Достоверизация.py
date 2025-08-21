@@ -176,7 +176,7 @@ if "dir_name" in st.session_state:
         os.makedirs(folder_path)
     st.markdown("""**Порядок действий:**""")
     st.markdown("""1. выгрузить отчеты из пирамиды за предыдущий месяц и переименовать их в -""")
-    st.markdown(""" - 30 мин.xlsx""")
+    st.markdown(""" - 30мин.xlsx""")
     st.markdown(""" - мес.xlsx""")
     st.markdown(""" - сут.xlsx""")
     st.markdown("""3. загрузить все 3 файла""")
