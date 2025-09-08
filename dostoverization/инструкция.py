@@ -7,4 +7,4 @@ import streamlit as st
 st.text('инструкция')
 
 # Используем iFrame для показа PDF
-st.write(f'<iframe src="https://www.incotexcom.ru/files/em/certificate/merkuriy-230-sertifikat-26-b-04143-24-mossar-do-2027-06-09.pdf" width="100%" height="600px"></iframe>', unsafe_allow_html=True)
+st.write(f'<iframe src="https://github.com/vahterovua/vahterov/blob/d3c6d397d948ad974eef90d7678bc4b689ff0e8c/dostoverization/merkuriy-255-avlg-811-01-00-ps-2021-06-02.pdf" width="100%" height="600px"></iframe>', unsafe_allow_html=True)
