@@ -12,7 +12,7 @@ if "dir_name" not in st.session_state:
 # Логика авторизации
 def login():
     # Поле для ввода логина
-    dir_name = st.text_input("Введите имя рабочей папки и нажмите Enter:", value="")
+    dir_name = st.text_input("Введите имя рабочей папки и нажмите Enter", value="")
     if dir_name:
         st.session_state.dir_name = dir_name
         st.session_state.logged_in = True
