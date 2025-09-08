@@ -7,4 +7,4 @@ import streamlit as st
 st.text('инструкция')
 
 # Отображение PDF с URL  
-st.pdf("https://example.com/document.pdf")
+st.pdf("https://www.incotexcom.ru/files/em/certificate/merkuriy-230-sertifikat-26-b-04143-24-mossar-do-2027-06-09.pdf")
