@@ -1,6 +1,9 @@
 plotly
 openpyxl
 IPython
+PyPDF2
+pymupdf
+
 
 
 
