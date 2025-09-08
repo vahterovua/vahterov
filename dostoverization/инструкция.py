@@ -6,5 +6,5 @@ import streamlit as st
 
 st.text('инструкция')
 
-# # Отображение PDF с URL  
-st.pdf("https://www.incotexcom.ru/files/em/certificate/merkuriy-230-sertifikat-26-b-04143-24-mossar-do-2027-06-09.pdf")
+# Используем iFrame для показа PDF
+st.write(f'<iframe src="https://www.incotexcom.ru/files/em/certificate/merkuriy-230-sertifikat-26-b-04143-24-mossar-do-2027-06-09.pdf" width="100%" height="600px"></iframe>', unsafe_allow_html=True)
