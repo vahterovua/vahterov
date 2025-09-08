@@ -40,7 +40,7 @@ if st.session_state.logged_in:
     st.sidebar.markdown(f"Папка : {st.session_state.dir_name}")
     
     # Кнопка выхода из системы
-    if st.sidebar.button("Log out", key="logout_button"):  # Убрали аргумент 'icon'
+    if st.sidebar.button("выйти", key="logout_button"):  # Убрали аргумент 'icon'
         st.session_state.logged_in = False
         st.session_state.dir_name = ""
         st.rerun()
