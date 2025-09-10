@@ -4,8 +4,7 @@ import base64
 from PIL import Image
 import shutil
 st.title("конвертер XML80020-Excel")
-st.markdown("""создать папку на диске P и скопировать zip архив с макетами XML80020:""")
-st.markdown("""нажать кнопку Обновить страницу""")
+
 a = st.text_input("введите имя папки и нажмите enter:", value="")
 
 folder_path=f'{a}'
@@ -14,7 +13,7 @@ st.markdown(f'выбрана папка {folder_path}')
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
 
-st.title("загрузить файлы")
+st.title("загрузить zip архив с макетами xml80020")
 
 uploaded_files = st.file_uploader("Выберите файлы для загрузки", accept_multiple_files=True)
 
@@ -42,7 +41,6 @@ from lxml import etree
 # распаковка zip файла в указанной папке
 import zipfile
 
-st.markdown(f'после завершения работы конвертера в папке {folder_path} сформируется файл сумма.xlsx. перед следущим использованием конвертера, удалите все файлы из папки')
 
 # Проходимся по всем файлам в папке
 for filename in os.listdir(folder_path):
