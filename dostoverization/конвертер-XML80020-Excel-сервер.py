@@ -150,7 +150,7 @@ import plotly.express as px
 df_pivot = final_df.pivot(index='Дата_время', columns='measuring_point_code', values='value')
 st.markdown(f'Количество точек учета: {len(df_pivot.columns)}')
 st.markdown(f'статистика')
-st.write(df_pivot.describe())
+st.write(df_pivot.describe().T)
 st.markdown(f'суммы')
 st.write(df_pivot.sum(axis=0))
 st.markdown(f'общая таблица')
