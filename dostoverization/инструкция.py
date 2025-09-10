@@ -54,7 +54,7 @@ def upload_file_to_github(file):
 
 st.title("Загрузчик файлов в GitHub 📁")
 
-uploaded_file = st.file_uploader("Выберите файл для загрузки:", type=["txt", "md", "csv"])
+uploaded_file = st.file_uploader("Выберите файл для загрузки:", type=["txt", "md", "csv","mp3"])
 if uploaded_file is not None:
     if st.button("Загрузить файл"):
         success = upload_file_to_github(uploaded_file)
