@@ -148,7 +148,7 @@ import plotly.express as px
 # Преобразование данных с помощью pivot()
 df_pivot = final_df.pivot(index='Дата_время', columns='measuring_point_code', values='value')
 st.markdown(f'общая таблица')
-st.markdown(f'{df_pivot.value_counts()}')
+st.markdown(f'df_pivot.discribe()')
 df_pivot
 
 fig1 = px.bar(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='графики потребления электроэнергии в кВт*ч')
