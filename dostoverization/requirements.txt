@@ -3,7 +3,7 @@ openpyxl
 IPython
 PyPDF2
 pymupdf
-
+lxml
 
 
 
