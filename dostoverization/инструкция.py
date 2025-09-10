@@ -14,7 +14,7 @@ from github import Github
 
 # Получаем токен OAuth и название репозитория из переменных окружения
 token = os.getenv("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")
-repo_name = 'vahterovua'
+repo_name = 'vahterov'
 folder_path = 'load'  # Папка внутри репозитория, куда будем заливать файл
 
 def upload_file_to_github(file):
