@@ -5,31 +5,23 @@ import base64
 from PIL import Image
 import shutil
 st.title("конвертер XML80020-Excel")
-st.markdown("""создать папку на диске P и скопировать zip архив с макетами XML80020:""")
-st.markdown("""нажать кнопку Обновить страницу""")
-a = st.text_input("введите имя папки и нажмите enter:", value="")
+if "button_click" not in st.session_state:
+    st.session_state.button_click = False
 
-if "dir_name" in st.session_state:
-    dir_name = st.session_state.dir_name
-    folder_path = f'data/{dir_name}'
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-    st.markdown("""**Порядок действий:**""")
-    st.markdown("""1. выгрузить отчеты из пирамиды за предыдущий месяц и переименовать их в -""")
-    st.markdown(""" - 30мин.xlsx""")
-    st.markdown(""" - мес.xlsx""")
-    st.markdown(""" - сут.xlsx""")
-    st.markdown("""3. загрузить все 3 файла""")
-    st.markdown("""4. дождаться сообщения обработка завершена""")
-    st.title("загрузить файлы")
-    upload_files()
-    
-st.markdown(f'выбрана папка {folder_path}')
+def upload_files():
+    uploaded_files = st.file_uploader("Выберите файлы для загрузки", accept_multiple_files=True)
+    if uploaded_files is not None:
+        for file in uploaded_files:
+            with open(os.path.join(folder_path, file.name), "wb") as f:
+                f.write(file.getbuffer())
 
-if not os.path.exists(folder_path):
-    os.makedirs(folder_path)
+        if len(uploaded_files) > 0:
+            st.success(f"{len(uploaded_files)} файлов успешно загружены в папку '{folder_path}'.")
+    else:
+        st.info("Файлы еще не были выбраны.")
 
-st.title("загрузить файлы")
+def count_non_numeric(row):
+    return row.isna().sum()
 
 uploaded_files = st.file_uploader("Выберите файлы для загрузки", accept_multiple_files=True)
 
