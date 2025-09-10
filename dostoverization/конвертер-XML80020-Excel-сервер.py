@@ -166,7 +166,7 @@ st.markdown(f'конвертация завершена, итоговый фай
 # Директория для загрузки файлов
 UPLOAD_DIR = f"{a}"
 st.markdown(f'выбрана папка {UPLOAD_DIR}')
-df_pivot.to_excel(F'{UPLOAD_DIR}\сумма.xlsx')
+
 
 # Функция для создания ссылки на скачивание файла
 def download_file(filename):
