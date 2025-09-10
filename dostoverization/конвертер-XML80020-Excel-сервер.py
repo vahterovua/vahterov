@@ -9,7 +9,21 @@ st.markdown("""создать папку на диске P и скопирова
 st.markdown("""нажать кнопку Обновить страницу""")
 a = st.text_input("введите имя папки и нажмите enter:", value="")
 
-folder_path=f'{a}'
+if "dir_name" in st.session_state:
+    dir_name = st.session_state.dir_name
+    folder_path = f'data/{dir_name}'
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    st.markdown("""**Порядок действий:**""")
+    st.markdown("""1. выгрузить отчеты из пирамиды за предыдущий месяц и переименовать их в -""")
+    st.markdown(""" - 30мин.xlsx""")
+    st.markdown(""" - мес.xlsx""")
+    st.markdown(""" - сут.xlsx""")
+    st.markdown("""3. загрузить все 3 файла""")
+    st.markdown("""4. дождаться сообщения обработка завершена""")
+    st.title("загрузить файлы")
+    upload_files()
+    
 st.markdown(f'выбрана папка {folder_path}')
 
 if not os.path.exists(folder_path):
