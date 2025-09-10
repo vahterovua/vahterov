@@ -163,14 +163,15 @@ fig1 = px.bar(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='график�
 fig1.update_traces(texttemplate='%{y}', textposition='outside')
 fig1
 
-df_pivot.to_excel(F'{a}\сумма.xlsx')
-st.markdown(f'конвертация завершена')
-
-
 fig = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='графики потребления электроэнергии в кВт*ч')
 # Добавляем подписи данных над каждым столбцом
 #fig.update_traces(texttemplate='%{y}', textposition='outside')
 fig
+
+df_pivot.to_excel(F'{a}\сумма.xlsx')
+st.markdown(f'конвертация завершена')
+
+
 
 # Директория для загрузки файлов
 UPLOAD_DIR = f"{a}"
