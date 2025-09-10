@@ -7,7 +7,6 @@ lxml
 zipfile
 os
 base64
-shutil
 
 
 
