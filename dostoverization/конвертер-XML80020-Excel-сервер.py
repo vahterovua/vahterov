@@ -155,7 +155,7 @@ fig1.update_traces(texttemplate='%{y}', textposition='outside')
 fig1
 
 df_pivot.to_excel(F'{a}\сумма.xlsx')
-st.markdown(f'конвертация завершена, итоговый файл - {a}\сумма.xlsx')
+st.markdown(f'конвертация завершена')
 
 
 #fig = px.bar(final_df,x='Дата_время',y='value', title='общий график потребления электроэнергии в кВт*ч')
