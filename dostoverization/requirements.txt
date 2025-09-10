@@ -4,6 +4,7 @@ IPython
 PyPDF2
 pymupdf
 lxml
+pygithub
 
 
 
