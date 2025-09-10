@@ -12,8 +12,8 @@ from pathlib import Path
 import streamlit as st
 from github import Github
 
-# Получаем токен OAuth и название репозитория из переменных окружения
-token = os.getenv("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")
+# Поле ввода для токена
+token = st.text_input("Введите значение вашего токена:")
 repo_name = 'vahterov'
 folder_path = 'load'  # Папка внутри репозитория, куда будем заливать файл
 
