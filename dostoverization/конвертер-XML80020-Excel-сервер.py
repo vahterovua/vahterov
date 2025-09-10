@@ -1,4 +1,3 @@
-# Streamlit run XML80020--Excel.py
 import streamlit as st
 import os
 import base64
@@ -33,12 +32,6 @@ if uploaded_files is not None:
     st.success(f"{len(uploaded_files)} файлов успешно загружены в папку '{folder_path}'.")
 else:
     st.info("Файлы еще не были выбраны.")
-
-
-
-
-
-
 
 
 
