@@ -1,4 +1,3 @@
-pip install --upgrade pip
 import streamlit as st
 st.set_page_config(page_title="достоверизация", page_icon="📈")
 st.title("📈 Достоверизация")
