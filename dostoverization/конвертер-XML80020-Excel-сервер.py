@@ -148,7 +148,7 @@ for file in os.listdir(folder_path):
 import plotly.express as px
 # Преобразование данных с помощью pivot()
 df_pivot = final_df.pivot(index='Дата_время', columns='measuring_point_code', values='value')
-st.markdown(f'Количество точек учета: {len(df_pivot.columns)}')
+# st.markdown(f'Количество точек учета: {len(df_pivot.columns)}')
 st.markdown(f'статистика')
 st.write(df_pivot.describe().T)
 graf=df_pivot.describe().T
