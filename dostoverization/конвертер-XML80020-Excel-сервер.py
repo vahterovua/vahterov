@@ -154,7 +154,7 @@ fig1 = px.bar(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='график�
 fig1.update_traces(texttemplate='%{y}', textposition='outside')
 fig1
 
-df_pivot.to_excel(F'{a}\сумма.xlsx')
+df_pivot.to_excel(F'{UPLOAD_DIR}\сумма.xlsx')
 st.markdown(f'конвертация завершена, итоговый файл - {a}\сумма.xlsx')
 
 
