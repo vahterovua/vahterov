@@ -158,7 +158,7 @@ st.write(df_pivot.sum(axis=0))
 st.markdown(f'общая таблица')
 df_pivot
 
-fig1 = px.bar(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='графики потребления электроэнергии в кВт*ч')
+fig1 = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='графики потребления электроэнергии в кВт*ч')
 # Добавляем подписи данных над каждым столбцом
 fig1.update_traces(texttemplate='%{y}', textposition='outside')
 fig1
