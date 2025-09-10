@@ -135,6 +135,7 @@ sum_values = final_df['value'].sum()
 print(f"Количество значений: {count_values}")
 print(f"Сумма значений без без учета Кр: {sum_values:.4f}")
 print(f"Сумма значений с учетом Кр: {k*sum_values:.4f}")
+
 st.markdown(f'Количество значений: {count_values}')
 st.markdown(f'Сумма значений: {sum_values:.4f}')
 # Удаляем исходные файлы после добавления их в архив
@@ -147,6 +148,7 @@ for file in os.listdir(folder_path):
 import plotly.express as px
 # Преобразование данных с помощью pivot()
 df_pivot = final_df.pivot(index='Дата_время', columns='measuring_point_code', values='value')
+st.markdown(f'Количество точек учета: {len(df_pivot.columns)}')
 st.markdown(f'статистика')
 st.write(df_pivot.describe())
 st.markdown(f'общая таблица')
