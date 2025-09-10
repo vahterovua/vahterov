@@ -187,14 +187,14 @@ if st.button("Удалить папку"):
     else:
         st.warning(f"Папка '{UPLOAD_DIR}' не найдена.")
 
-# Отображение файлов для скачивания
-if os.path.exists(UPLOAD_DIR):
-    files = [f for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f))]
-    if len(files) > 0:
-        st.subheader("Доступные файлы для скачивания:")
-        for file in files:
-            st.markdown(download_file(os.path.join(UPLOAD_DIR, file)), unsafe_allow_html=True)
-    else:
-        st.info("Нет доступных файлов для скачивания.")
-else:
-    st.warning("Директория для загрузки файлов не найдена.")
+# # Отображение файлов для скачивания
+# if os.path.exists(UPLOAD_DIR):
+#     files = [f for f in os.listdir(UPLOAD_DIR) if os.path.isfile(os.path.join(UPLOAD_DIR, f))]
+#     if len(files) > 0:
+#         st.subheader("Доступные файлы для скачивания:")
+#         for file in files:
+#             st.markdown(download_file(os.path.join(UPLOAD_DIR, file)), unsafe_allow_html=True)
+#     else:
+#         st.info("Нет доступных файлов для скачивания.")
+# else:
+#     st.warning("Директория для загрузки файлов не найдена.")
