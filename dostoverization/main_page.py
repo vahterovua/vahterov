@@ -28,7 +28,7 @@ show_graph = st.Page("Просмотр-графиков.py", title="Просмо
 file_processing_1tu = st.Page("Достоверизация-1ТУ.py", title="Достоверизация по одной точке,2 варианта ", default=False)
 new_processing = st.Page("new_достоверизация.py", title="new_достоверизация", default=False)
 new_graf = st.Page("new_Просмотр-графиков.py", title="new_Просмотр-графиков", default=False)
-xml8020_ecxel = st.Page("конвертер-XML80020-Excel-сервер.py", title="конвертер xml80020-excel", default=False)
+xml80020_excel = st.Page("конвертер-XML80020-Excel-сервер.py", title="конвертер xml80020-excel", default=False)
 instr = st.Page("инструкция.py", title="инструкция", default=False)
 
 # Основная логика приложения
