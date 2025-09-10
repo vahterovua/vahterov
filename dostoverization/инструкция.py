@@ -14,7 +14,7 @@ from github import Github
 
 # Поле ввода для токена
 token = st.text_input("Введите значение вашего токена:")
-repo_name = 'vahterov'
+repo_name = 'vahterovua/vahterov'
 folder_path = 'load'  # Папка внутри репозитория, куда будем заливать файл
 token
 def upload_file_to_github(file):
