@@ -35,7 +35,7 @@ instr = st.Page("инструкция.py", title="инструкция", default
 if st.session_state.logged_in:
     # Создание боковых панелей и навигации
     pg = st.navigation({
-        " ": [file_processing, show_graph, file_processing_1tu, file_show,new_processing,new_graf,instr]
+        " ": [file_processing, show_graph, file_processing_1tu, file_show,new_processing,new_graf,instr,xml80020_excel]
     })
     # Показываем имя пользователя в боковой панели
     st.sidebar.markdown(f"Папка : {st.session_state.dir_name}")
