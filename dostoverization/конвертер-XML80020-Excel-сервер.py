@@ -167,7 +167,7 @@ df_pivot.to_excel(F'{a}\сумма.xlsx')
 st.markdown(f'конвертация завершена')
 
 
-fig = px.bar(final_df,x='Дата_время',y='value', title='общий график потребления электроэнергии в кВт*ч')
+fig = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='графики потребления электроэнергии в кВт*ч')
 # Добавляем подписи данных над каждым столбцом
 #fig.update_traces(texttemplate='%{y}', textposition='outside')
 fig
