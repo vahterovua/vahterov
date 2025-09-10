@@ -3,6 +3,11 @@ openpyxl
 IPython
 PyPDF2
 pymupdf
+lxml
+zipfile
+os
+base64
+shutil
 
 
 
