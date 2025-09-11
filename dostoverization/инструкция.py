@@ -10,7 +10,7 @@ files = os.listdir(".")
 
 for file in files:
     # Создаем ссылку на скачивание файла
-    download_link = f"({os.path.abspath(file)})"
+    download_link = f"({os.path.abspath(file)}"
     
     # Добавляем ссылку на скачивание в Streamlit
     st.markdown(download_link)
