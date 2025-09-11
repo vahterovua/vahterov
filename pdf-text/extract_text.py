@@ -4,7 +4,7 @@ from io import BytesIO
 import streamlit as Streamlit
 
 def extract_text_and_tables_from_pdf(file):
-    doc = fitz.open(stream=file.read(), filetype="pdf")
+    doc = PyMuPDF.open(stream=file.read(), filetype="pdf")
     text_pages = []
     tables_pages = []
     
