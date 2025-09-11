@@ -1,2 +1,2 @@
-# import streamlit as st
-streamlit.write('привет')
+import streamlit as st
+st.write('привет')
