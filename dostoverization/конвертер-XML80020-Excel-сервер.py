@@ -222,7 +222,7 @@ if len(all_files) > 0:
     st.subheader('Доступные файлы для скачивания:')
     for file in all_files:
         file_path = os.path.join(current_directory, file)
-        button_label = f"📥 Скачать {file}"
+        button_label = f"📥 {file}"
         # Создаем кнопку для скачивания каждого файла
         st.download_button(
             label=button_label,
