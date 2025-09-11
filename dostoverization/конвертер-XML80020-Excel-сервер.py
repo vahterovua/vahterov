@@ -210,22 +210,26 @@ if st.button("Удалить папку"):
 #     st.warning("Директория для загрузки файлов не найдена.")
 
 
-# Получаем путь текущего каталога
-st.write(os.getcwd())
+import streamlit as st
 
+# Ваш существующий код
+current_dir = os.getcwd()
+st.write(f"Текущий рабочий каталог: {current_dir}")
 
-# Получаем список всех файлов в текущем каталоге
-files = [f for f in os.getcwd()) if os.path.isfile(f)]
+# Допустим, у вас есть CSV-файл 'example.csv', который вы хотите предложить скачать
+data_file_path = f"{current_dir}/example.csv"
 
-for file_name in files:
-    # Открываем файл в режиме чтения байтов
-    with open(file_name, 'rb') as file:
-        data = file.read()
+try:
+    with open(data_file_path, mode='rb') as file:
+        data_to_download = file.read()
     
-    # Создаем кнопку загрузки для каждого файла
+    # Создаем кнопку для скачивания файла
     st.download_button(
-        label=f'📥 Скачать {file_name}',
-        data=data,
-        file_name=file_name,
-        mime='application/octet-stream'
+        label="📥 Скачать example.csv",
+        data=data_to_download,
+        file_name="example.csv",
+        mime="text/csv"
     )
+except FileNotFoundError:
+    st.error("Файл не найден.")
+
