@@ -14,9 +14,3 @@ for file in files:
     
     # Добавляем ссылку на скачивание в Streamlit
     st.markdown(download_link)
-
-    # Создаем ссылку на удаление файла
-    delete_link = f"<a href='javascript:void(0);' onclick=\"if(confirm('Are you sure you want to delete {file}?')){{window.location.href='/delete_file/{file}'}}\">Delete {file}</a>"
-    
-    # Добавляем ссылку на удаление в Streamlit
-    st.markdown(delete_link, unsafe_allow_html=True)
