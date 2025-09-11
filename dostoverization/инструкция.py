@@ -3,7 +3,16 @@ import streamlit as st
 import os
 from pathlib import Path
 
+from pathlib import Path
 
+
+def download_link(object_to_download, download_filename, download_link_text):
+    """
+    Generates a link to download the given object_to_download.
+    """
+    import base64
+    b64 = base64.b64encode(object_to_download.encode()).decode()
+    return f'<a href="data:file/txt;base64,{b64}" download="{download_filename}">{download_link_text}</a>'
 
 st.title("Загрузчик файлов 📁")
 
