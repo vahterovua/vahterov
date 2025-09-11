@@ -1,3 +1,6 @@
+import steamlit as st
+
+
 from pypdf import PdfReader
 import pytesseract
 from PIL import Image
