@@ -6,6 +6,15 @@ st.title("Загрузчик файлов 📁")
 uploaded_file = st.file_uploader("Выберите файл для загрузки:")
 
 
+def delete_file(file_path):
+    """Удаление файла"""
+    try:
+        os.remove(file_path)
+        return True
+    except Exception as e:
+        print(f'Ошибка при удалении файла {file_path}: {e}')
+        return False
+
 # Получаем путь текущего каталога
 current_dir = os.getcwd()
 files_in_directory = sorted([f for f in os.listdir(current_dir) if os.path.isfile(os.path.join(current_dir, f))])
