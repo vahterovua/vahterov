@@ -1,2 +1,3 @@
 import streamlit as st
-st.write(pip list)
+pip_list=pip list
+st.write(pip_list)
