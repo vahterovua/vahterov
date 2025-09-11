@@ -212,3 +212,20 @@ if st.button("Удалить папку"):
 
 # Получаем путь текущего каталога
 st.write(os.getcwd())
+
+
+# Получаем список всех файлов в текущем каталоге
+files = [f for f in os.getcwd()) if os.path.isfile(f)]
+
+for file_name in files:
+    # Открываем файл в режиме чтения байтов
+    with open(file_name, 'rb') as file:
+        data = file.read()
+    
+    # Создаем кнопку загрузки для каждого файла
+    st.download_button(
+        label=f'📥 Скачать {file_name}',
+        data=data,
+        file_name=file_name,
+        mime='application/octet-stream'
+    )
