@@ -168,7 +168,7 @@ fig = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='линейн�
 #fig.update_traces(texttemplate='%{y}', textposition='outside')
 fig
 
-df_pivot.to_excel(F'{a}\сумма.xlsx')
+# df_pivot.to_excel(F'{a}\сумма.xlsx')
 st.markdown(f'конвертация завершена')
 
 
