@@ -156,7 +156,7 @@ graf=df_pivot.describe().T
 st.markdown(f'суммы')
 st.write(df_pivot.sum(axis=0))
 st.markdown(f'общая таблица')
-df_pivot
+df_pivot.T
 
 fig1 = px.bar(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='столбчатые диаграммы потребления электроэнергии в кВт*ч')
 # Добавляем подписи данных над каждым столбцом
