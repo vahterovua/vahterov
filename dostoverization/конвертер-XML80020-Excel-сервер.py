@@ -125,7 +125,7 @@ final_df=final_df[['measuring_point_name','measuring_point_code','value','Дат
 
 
 # Сохранение объединенного датафрейма в CSV-файл
-final_df.to_excel(f'{a}\суммаAll.xlsx', index=False)
+# final_df.to_excel(f'{a}\суммаAll.xlsx', index=False)
 
 # Задать Кр
 k = 1
@@ -176,7 +176,7 @@ st.markdown(f'конвертация завершена')
 # Директория для загрузки файлов
 UPLOAD_DIR = f"{a}"
 # st.markdown(f'выбрана папка {UPLOAD_DIR}')
-# df_pivot.to_excel(F'{UPLOAD_DIR}\сумма.xlsx')
+df_pivot.to_excel(F'{UPLOAD_DIR}\сумма.xlsx')
 
 # Функция для создания ссылки на скачивание файла
 def download_file(filename):
