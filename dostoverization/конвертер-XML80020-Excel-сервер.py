@@ -209,27 +209,30 @@ if st.button("Удалить папку"):
 # else:
 #     st.warning("Директория для загрузки файлов не найдена.")
 
+def download_file(file_path):
+    """Генерирует ссылку для скачивания файла."""
+    with open(file_path, mode='rb') as file:
+        return file.read()
 
-import streamlit as st
+# Получение списка всех файлов в текущей рабочей директории
+current_directory = os.getcwd()  # Текущий рабочий каталог
+all_files = [f for f in os.listdir(current_directory) if os.path.isfile(os.path.join(current_directory, f))]
 
-# Ваш существующий код
-current_dir = os.getcwd()
-st.write(f"Текущий рабочий каталог: {current_dir}")
+if len(all_files) > 0:
+    st.subheader('Доступные файлы для скачивания:')
+    for file in all_files:
+        file_path = os.path.join(current_directory, file)
+        button_label = f"📥 Скачать {file}"
+        # Создаем кнопку для скачивания каждого файла
+        st.download_button(
+            label=button_label,
+            data=download_file(file_path),
+            file_name=file,
+            mime=None,  # Auto-detect MIME type based on the extension
+            key=file  # Уникальный ключ для каждой кнопки
+        )
+else:
+    st.info("Нет доступных файлов для скачивания.")
 
-# Допустим, у вас есть CSV-файл 'example.csv', который вы хотите предложить скачать
-data_file_path = f"{current_dir}/example.csv"
 
-try:
-    with open(data_file_path, mode='rb') as file:
-        data_to_download = file.read()
-    
-    # Создаем кнопку для скачивания файла
-    st.download_button(
-        label="📥 Скачать example.csv",
-        data=data_to_download,
-        file_name="example.csv",
-        mime="text/csv"
-    )
-except FileNotFoundError:
-    st.error("Файл не найден.")
 
