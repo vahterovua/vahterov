@@ -1,5 +1,5 @@
-streamlit==1.28.*
-pymupdf==1.23.*   # библиотека для работы с PDF файлами
-pandas==2.1.*     # работа с табличными данными
-openpyxl==3.1.*   # сохранение в Excel форматы
+streamlit
+pymupdf
+pandas
+openpyxl
 fitz
