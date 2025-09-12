@@ -58,6 +58,11 @@ else:
 
 
 
+def download_file(file_path):
+    """Генерирует ссылку для скачивания файла."""
+    with open(file_path, mode='rb') as file:
+        return file.read()
+
 # Получение списка всех файлов в текущей рабочей директории
 current_directory = os.getcwd()  # Текущий рабочий каталог
 all_files = [f for f in os.listdir(current_directory) if os.path.isfile(os.path.join(current_directory, f))]
