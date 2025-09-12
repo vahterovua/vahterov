@@ -174,57 +174,57 @@ def main():
         except Exception as e:
             print(f"Ошибка при создании архива: {e}")
     
-    # Распаковка и анализ данных
-    try:
-        # Распаковка архива
-        if os.path.exists(zip_file_name):
-            with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
-                zip_ref.extractall(path=folder_path)
-            print(f'Архив {zip_file_name} успешно распакован.')
+#     # Распаковка и анализ данных
+#     try:
+#         # Распаковка архива
+#         if os.path.exists(zip_file_name):
+#             with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
+#                 zip_ref.extractall(path=folder_path)
+#             print(f'Архив {zip_file_name} успешно распакован.')
         
-        # Чтение и анализ XML файлов
-        dataframes = []
-        for filename in os.listdir(folder_path):
-            if filename.endswith('.xml'):
-                file_path = os.path.join(folder_path, filename)
-                try:
-                    df_data = pd.DataFrame(parse_xml_file(file_path))
-                    dataframes.append(df_data)
-                except Exception as e:
-                    print(f"Ошибка при парсинге файла {filename}: {e}")
+#         # Чтение и анализ XML файлов
+#         dataframes = []
+#         for filename in os.listdir(folder_path):
+#             if filename.endswith('.xml'):
+#                 file_path = os.path.join(folder_path, filename)
+#                 try:
+#                     df_data = pd.DataFrame(parse_xml_file(file_path))
+#                     dataframes.append(df_data)
+#                 except Exception as e:
+#                     print(f"Ошибка при парсинге файла {filename}: {e}")
         
-        if dataframes:
-            # Объединение данных
-            final_df = pd.concat(dataframes, ignore_index=True)
-            # Сохранение в Excel
-            final_df.to_excel('сумма_по_всем_xml.xlsx', index=False)
-            # Преобразование и анализ значений
-            final_df['value'] = final_df['value'].str.replace(',', '.').astype(float)
-            count_values = len(final_df)
-            sum_values = final_df['value'].sum()
-            print(f"\nРезультаты обработки:")
-            print(f"Месяц: {month}")
-            print(f"Потребитель: {abonent}")
-            print(f"Код счетчика: {code}")
-            print(f"Количество значений: {count_values}")
-            print(f"Сумма значений: {sum_values:.4f}")
-            px.line(pd.read_excel('табл_в_XML80020.xlsx'),x='дата_время',y=['value','день_нед'],title=f'график {abonent} в екселе').show()
-            px.line(pd.read_excel('сумма_по_всем_xml.xlsx')[['value']],title=f'график {abonent} в xml80020').show()
-            px.line(pd.read_excel('табл_в_XML80020.xlsx'),x='дата_время',y=['value','день_нед'],title=f'график {abonent} в екселе').write_html(f'{abonent}_до.html')
-            px.line(pd.read_excel('сумма_по_всем_xml.xlsx')[['value']],title=f'график {abonent} в екселе').write_html(f'{abonent}_после.html')
-            # Очистка XML файлов после обработки
-            for filename in os.listdir(folder_path):
-                if filename.endswith('.xml'):
-                    os.remove(os.path.join(folder_path, filename))
-                    print(f'Файл {filename} удален')
-        else:
-            print("Нет данных для анализа")
+#         if dataframes:
+#             # Объединение данных
+#             final_df = pd.concat(dataframes, ignore_index=True)
+#             # Сохранение в Excel
+#             final_df.to_excel('сумма_по_всем_xml.xlsx', index=False)
+#             # Преобразование и анализ значений
+#             final_df['value'] = final_df['value'].str.replace(',', '.').astype(float)
+#             count_values = len(final_df)
+#             sum_values = final_df['value'].sum()
+#             print(f"\nРезультаты обработки:")
+#             print(f"Месяц: {month}")
+#             print(f"Потребитель: {abonent}")
+#             print(f"Код счетчика: {code}")
+#             print(f"Количество значений: {count_values}")
+#             print(f"Сумма значений: {sum_values:.4f}")
+#             px.line(pd.read_excel('табл_в_XML80020.xlsx'),x='дата_время',y=['value','день_нед'],title=f'график {abonent} в екселе').show()
+#             px.line(pd.read_excel('сумма_по_всем_xml.xlsx')[['value']],title=f'график {abonent} в xml80020').show()
+#             px.line(pd.read_excel('табл_в_XML80020.xlsx'),x='дата_время',y=['value','день_нед'],title=f'график {abonent} в екселе').write_html(f'{abonent}_до.html')
+#             px.line(pd.read_excel('сумма_по_всем_xml.xlsx')[['value']],title=f'график {abonent} в екселе').write_html(f'{abonent}_после.html')
+#             # Очистка XML файлов после обработки
+#             for filename in os.listdir(folder_path):
+#                 if filename.endswith('.xml'):
+#                     os.remove(os.path.join(folder_path, filename))
+#                     print(f'Файл {filename} удален')
+#         else:
+#             print("Нет данных для анализа")
             
-    except Exception as e:
-        print(f"Ошибка при анализе данных: {e}")
+#     except Exception as e:
+#         print(f"Ошибка при анализе данных: {e}")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
 
 
