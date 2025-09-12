@@ -208,7 +208,7 @@ def main():
             print(f"Код счетчика: {code}")
             print(f"Количество значений: {count_values}")
             print(f"Сумма значений: {sum_values:.4f}")
-            px.line(pd.read_excel('табл_в_XML80020.xlsx'),x='дата_время',y=['value','день_нед'],title=f'график {abonent} в екселе').show()
+            st.write(px.line(pd.read_excel('табл_в_XML80020.xlsx'),x='дата_время',y=['value','день_нед'],title=f'график {abonent} в екселе').show())
             px.line(pd.read_excel('сумма_по_всем_xml.xlsx')[['value']],title=f'график {abonent} в xml80020').show()
             px.line(pd.read_excel('табл_в_XML80020.xlsx'),x='дата_время',y=['value','день_нед'],title=f'график {abonent} в екселе').write_html(f'{abonent}_до.html')
             px.line(pd.read_excel('сумма_по_всем_xml.xlsx')[['value']],title=f'график {abonent} в екселе').write_html(f'{abonent}_после.html')
