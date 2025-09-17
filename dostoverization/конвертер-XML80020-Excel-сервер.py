@@ -168,7 +168,7 @@ fig = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='линейн�
 #fig.update_traces(texttemplate='%{y}', textposition='outside')
 fig
 
-fig_day = px.line(df_pivot,x=df_pivot.index,y=df_pivotdf.index.dayofweek, title='линейные графики потребления электроэнергии в кВт*ч')
+fig_day = px.line(df_pivot,x=df_pivot.index,y=df_pivot.index.dayofweek, title='линейные графики потребления электроэнергии в кВт*ч')
 # Добавляем подписи данных над каждым столбцом
 #fig.update_traces(texttemplate='%{y}', textposition='outside')
 fig_day
