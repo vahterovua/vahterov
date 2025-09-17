@@ -168,7 +168,7 @@ fig = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='линейн�
 #fig.update_traces(texttemplate='%{y}', textposition='outside')
 fig
 
-fig_day = px.line(df_pivot,x=df_pivot.index,y=df_pivot.index.dayofweek+1, title='день недели')
+fig_day = px.line(df_pivot,x=df_pivot.index.dayofweek+1,y=df_pivot.columns, title='день недели')
 
 fig_day
 
