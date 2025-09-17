@@ -168,20 +168,10 @@ fig = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='линейн�
 #fig.update_traces(texttemplate='%{y}', textposition='outside')
 fig
 
-from plotly.subplots import make_subplots
-# Создаем субграфики с двумя панелями
-fig = make_subplots(rows=2, cols=1,
-                   subplot_titles=('Линейные графики потребления электроэнергии', 'Дни недели'))
+fig_day = px.line(df_pivot,x=df_pivot.index,y=df_pivot.index.dayofweek, title='день недели')
 
-# Добавляем первый график на первую панель
-for col in df_pivot.columns:
-    fig.add_trace(px.line(df_pivot, x=df_pivot.index, y=col).data[0], row=1, col=1)
+fig_day
 
-# Добавляем второй график на вторую панель
-fig.add_trace(
-    px.line(df_pivot, x=df_pivot.index, y=df_pivot.index.dayofweek).data[0],
-    row=2, col=1
-)
 
 # Обновляем размеры графиков и название общей фигуры
 fig.update_layout(height=800, showlegend=False, title_text="Графики энергопотребления")
