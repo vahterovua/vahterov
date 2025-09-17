@@ -168,10 +168,26 @@ fig = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='линейн�
 #fig.update_traces(texttemplate='%{y}', textposition='outside')
 fig
 
-fig_day = px.line(df_pivot,x=df_pivot.index,y=df_pivot.index.dayofweek, title='линейные графики потребления электроэнергии в кВт*ч')
-# Добавляем подписи данных над каждым столбцом
-#fig.update_traces(texttemplate='%{y}', textposition='outside')
-fig_day
+from plotly.subplots import make_subplots
+# Создаем субграфики с двумя панелями
+fig = make_subplots(rows=2, cols=1,
+                   subplot_titles=('Линейные графики потребления электроэнергии', 'Дни недели'))
+
+# Добавляем первый график на первую панель
+for col in df_pivot.columns:
+    fig.add_trace(px.line(df_pivot, x=df_pivot.index, y=col).data[0], row=1, col=1)
+
+# Добавляем второй график на вторую панель
+fig.add_trace(
+    px.line(df_pivot, x=df_pivot.index, y=df_pivot.index.dayofweek).data[0],
+    row=2, col=1
+)
+
+# Обновляем размеры графиков и название общей фигуры
+fig.update_layout(height=800, showlegend=False, title_text="Графики энергопотребления")
+
+# Отображаем итоговую фигуру
+fig.show()
 
 # df_pivot.to_excel(F'{a}\сумма.xlsx')
 st.markdown(f'конвертация завершена, скачайте файл общая таблица.xlsx')
