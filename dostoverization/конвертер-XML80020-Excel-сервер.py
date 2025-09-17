@@ -148,6 +148,9 @@ for file in os.listdir(folder_path):
 import plotly.express as px
 # Преобразование данных с помощью pivot()
 df_pivot = final_df.pivot(index='Дата_время', columns='measuring_point_code', values='value')
+
+df_pivot['день_недели']=df_pivot.index.dayofweek+1
+
 # st.markdown(f'Количество точек учета: {len(df_pivot.columns)}')
 st.markdown(f'статистика')
 st.write(df_pivot.describe().T)
@@ -167,10 +170,11 @@ fig = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='линейн�
 # Добавляем подписи данных над каждым столбцом
 #fig.update_traces(texttemplate='%{y}', textposition='outside')
 fig
+df_pivot['день_недели']=df_pivot.index.dayofweek+1
 
-fig_day = px.line(df_pivot,x=df_pivot.index,y=([df_pivot.index.dayofweek+1,df_pivot.columns]), title='день недели')
+# fig_day = px.line(df_pivot,x=df_pivot.index,y=([df_pivot.index.dayofweek+1,df_pivot.columns]), title='день недели')
 
-fig_day
+# fig_day
 
 
 
