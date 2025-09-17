@@ -173,11 +173,7 @@ fig_day = px.line(df_pivot,x=df_pivot.index,y=df_pivot.index.dayofweek+1, title=
 fig_day
 
 
-# Обновляем размеры графиков и название общей фигуры
-fig.update_layout(height=800, showlegend=False, title_text="Графики энергопотребления")
 
-# Отображаем итоговую фигуру
-fig.show()
 
 # df_pivot.to_excel(F'{a}\сумма.xlsx')
 st.markdown(f'конвертация завершена, скачайте файл общая таблица.xlsx')
