@@ -121,7 +121,7 @@ def format_datetime(row):
 # Применяем функцию к каждому ряду для получения новой колонки
 final_df['Дата_время'] = final_df.apply(format_datetime, axis=1)
 final_df=final_df[['measuring_point_name','measuring_point_code','value','Дата_время']]
-final_df
+final_df['measuring_point_name'].unique()
 
 
 # Сохранение объединенного датафрейма в CSV-файл
