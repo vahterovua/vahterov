@@ -122,7 +122,7 @@ def format_datetime(row):
 final_df['Дата_время'] = final_df.apply(format_datetime, axis=1)
 final_df=final_df[['measuring_point_name','measuring_point_code','value','Дата_время']]
 st.text('точки учета')
-st.write(final_df[['measuring_point_name','measuring_point_code']].unique())
+st.write(final_df['measuring_point_name','measuring_point_code'].unique())
 
 
 # Сохранение объединенного датафрейма в CSV-файл
