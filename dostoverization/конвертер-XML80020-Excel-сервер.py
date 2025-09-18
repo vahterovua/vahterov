@@ -172,9 +172,7 @@ fig = px.line(df_pivot,x=df_pivot.index,y=df_pivot.columns, title='линейн�
 fig
 df_pivot['день_недели']=df_pivot.index.dayofweek+1
 
-# fig_day = px.line(df_pivot,x=df_pivot.index,y=([df_pivot.index.dayofweek+1,df_pivot.columns]), title='день недели')
-
-# fig_day
+st.line_chart(df_pivot)
 
 
 
