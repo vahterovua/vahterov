@@ -64,4 +64,10 @@ if st.button("Выполнить запрос"):
 
 
 result_df.to_excel('результат запроса.xlsx')
-
+# Генерируем ссылку для скачивания
+st.download_button(
+    label="Скачать результат",
+    data=output_file,
+    file_name="результат_запроса.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
