@@ -6,6 +6,8 @@ pymupdf
 lxml
 pygithub
 sqlalchemy
+psycopg2
+
 
 
 
