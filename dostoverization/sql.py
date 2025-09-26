@@ -44,4 +44,5 @@ if st.button("Отправить"):
     else:
         st.warning("Вы ничего не ввели.")
 
+pd.io.sql.read_sql(request, con = engine)
 
