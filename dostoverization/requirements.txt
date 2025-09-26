@@ -5,6 +5,7 @@ PyPDF2
 pymupdf
 lxml
 pygithub
+sqlalchemy
 
 
 
