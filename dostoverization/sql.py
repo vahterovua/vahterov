@@ -66,27 +66,6 @@ st.write('выполненный запрос одной строкой :',sql_i
 st.write('хост :',host,' __порт :',port,' __БД :',db_name,' __логин :',username,' __пр :',password)
 
 
-# Поле для ввода SQL-запроса
-sql_input = st.text_area("Введите ваш SQL-запрос:", height=150)
-
-# Кнопка для отправки запроса
-if st.button("Выполнить запрос"):
-    # Проверка заполненных полей
-    if all([host, port, db_name, username, password]):
-        # Создание подключения к базе данных
-        engine = create_connection(host, port, db_name, username, password)
-    
-        # Выполнение запроса и получение результата
-        result_df = run_query(engine, sql_input)
-    
-        if result_df is not None:
-            st.subheader("Результат выполнения запроса:")
-            st.dataframe(result_df)
-        else:
-            st.error("Нет результата.")
-    else:
-        st.warning("Заполните все обязательные поля!")
-
 
 st.write('выполненный запрос одной строкой :',sql_input)
 st.write('хост :',host,' __порт :',port,' __БД :',db_name,' __логин :',username,' __пр :',password)
