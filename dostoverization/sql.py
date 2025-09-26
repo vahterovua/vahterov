@@ -10,41 +10,67 @@ st.text('SQL запросы')
 st.text('введите параметры подключения к БД:')
 
 
-# Поля ввода для каждого параметра соединения
-user = st.text_input("Имя пользователя:")
-password = st.text_input("Пароль:", type="password")
-host = st.text_input("Хост:")
-port = st.number_input("Порт:", min_value=1, max_value=65535)
-database = st.text_input("Название базы данных:")
+# # Поля ввода для каждого параметра соединения
+# user = st.text_input("Имя пользователя:")
+# password = st.text_input("Пароль:", type="password")
+# host = st.text_input("Хост:")
+# port = st.number_input("Порт:", min_value=1, max_value=65535)
+# database = st.text_input("Название базы данных:")
 
-if user and password and host and port and database:
-    connection_string = f"postgresql://{user}:{password}@{host}:{port}/{database}"
+# if user and password and host and port and database:
+#     connection_string = f"postgresql://{user}:{password}@{host}:{port}/{database}"
     
-    try:
-        engine = create_engine(connection_string, connect_args={"sslmode": "require"})
+#     try:
+#         engine = create_engine(connection_string, connect_args={"sslmode": "require"})
         
-        # Здесь можно продолжить работу с базой данных
-        st.success(f"Успешное подключение к {database}")
+#         # Здесь можно продолжить работу с базой данных
+#         st.success(f"Успешное подключение к {database}")
     
-    except Exception as e:
-        st.error(f"Произошла ошибка: {e}")
-else:
-    st.warning("Заполните все необходимые поля.")
+#     except Exception as e:
+#         st.error(f"Произошла ошибка: {e}")
+# else:
+#     st.warning("Заполните все необходимые поля.")
 
 
-# Заголовок страницы
-st.title("SQL запрос")
+# # Заголовок страницы
+# st.title("SQL запрос")
 
-# Поле ввода многострочного текста
-request = st.text_area(label="Введите ваш текст:", value="", height=200)
+# # Поле ввода многострочного текста
+# request = st.text_area(label="Введите ваш текст:", value="", height=200)
 
-# Кнопка отправки формы
-if st.button("Отправить"):
-    if input_text.strip():
-        # Обработка введённого текста
-        st.write(f"обработка запроса:\n\n{input_text}")
-    else:
-        st.warning("Вы ничего не ввели.")
+# # Кнопка отправки формы
+# if st.button("Отправить"):
+#     if input_text.strip():
+#         # Обработка введённого текста
+#         st.write(f"обработка запроса:\n\n{input_text}")
+#     else:
+#         st.warning("Вы ничего не ввели.")
 
+# pd.io.sql.read_sql(request, con = engine)
+
+# устанавливаем параметры
+db_config = {'user': 'praktikum_student', # имя пользователя
+'pwd': 'Sdf4$2;d-d30pp', # пароль
+'host': 'rc1b-wcoijxj3yxfsf3fs.mdb.yandexcloud.net',
+'port': 6432, # порт подключения
+'db': 'data-analyst-afisha'} # название базы данных
+connection_string = 'postgresql://{}:{}@{}:{}/{}'.format(db_config['user'],
+ db_config['pwd'],
+ db_config['host'],
+ db_config['port'],
+ db_config['db'])
+# сохраняем коннектор
+engine = create_engine(connection_string, connect_args={'sslmode':'require'})
+
+request = """
+SELECT table_name,
+    column_name,
+    data_type,
+    is_nullable,
+    column_default
+FROM information_schema.columns
+WHERE table_schema = 'afisha'
+    AND table_name IN ('purchases', 'events', 'city_id', 'regions')
+ORDER BY  table_name, ordinal_position;
+"""
 pd.io.sql.read_sql(request, con = engine)
-
