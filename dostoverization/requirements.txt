@@ -6,6 +6,9 @@ pymupdf
 lxml
 pygithub
 sqlalchemy
+IPython.display
+ipywidgets
+
 
 
 
