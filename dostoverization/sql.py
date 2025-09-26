@@ -62,23 +62,6 @@ if st.button("Выполнить запрос"):
         st.warning("Заполните все обязательные поля!")
 
 
-# Генерируем файл excel и предлагаем скачать
-excel_file = result_df.to_excel('data.xlsx')
-def download_file(file_path):
-    with open(file_path, 'rb') as f:
-        file_data = f.read()
-    return file_data
 
-# Получаем список всех файлов в текущей директории
-files_in_current_dir = [f for f in os.listdir('.') if os.path.isfile(f)]
-st.title('Загрузка файлов')
-selected_file = st.selectbox("Выберите файл:", files_in_current_dir)
-if selected_file is not None:
-    # Создаем ссылку на загрузку файла
-    data = download_file(selected_file)
-    btn = st.download_button(
-        label=f"Скачать {selected_file}",
-        data=data,
-        file_name=selected_file,
-        mime="application/octet-stream",
-    )
+result_df.to_excel('результат запроса.xlsx')
+
