@@ -65,29 +65,5 @@ if st.button("Выполнить запрос"):
 
 result_df.to_excel('результат запроса.xlsx')
 
-# Используем pathlib для надежного получения абсолютного пути к текущей директории
-current_dir = str(Path(__file__).parent.resolve())
 
-def main():
-    # Получаем список файлов в текущей директории
-    files_in_current_directory = os.listdir(current_dir)
-    
-    # Заголовок страницы
-    st.title("Файлы в текущей директории")
-    
-    for file in files_in_current_directory:
-        if not file.startswith('.'):  # игнорируем скрытые файлы
-            full_path = os.path.join(current_dir, file)
-            try:
-                with open(full_path, 'rb') as f:
-                    bytes_data = f.read()
-                
-                # Формируем ссылку для скачивания
-                href = f'<a href="data:application/octet-stream;base64,{bytes_data.decode("latin1").encode("base64")}" download="{file}">Скачать {file}</a>'
-                st.markdown(href, unsafe_allow_html=True)
-            except Exception as e:
-                print(f"Ошибка при чтении файла {file}: {e}")
-
-if __name__ == "__main__":
-    main()
 
