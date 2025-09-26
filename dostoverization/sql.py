@@ -31,16 +31,16 @@ else:
 
 
 # Заголовок страницы
-st.title("Пример поля ввода многострочного текста")
+st.title("SQL запрос")
 
 # Поле ввода многострочного текста
-input_text = st.text_area(label="Введите ваш текст:", value="", height=200)
+request = st.text_area(label="Введите ваш текст:", value="", height=200)
 
 # Кнопка отправки формы
 if st.button("Отправить"):
     if input_text.strip():
         # Обработка введённого текста
-        st.write(f"Введённый вами текст:\n\n{input_text}")
+        st.write(f"обработка запроса:\n\n{input_text}")
     else:
         st.warning("Вы ничего не ввели.")
 
