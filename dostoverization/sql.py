@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
-
+from IPython.display import display
+from ipywidgets import Textarea
 
 st.text('SQL запросы')
 
