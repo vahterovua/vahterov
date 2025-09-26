@@ -66,6 +66,8 @@ st.write('выполненный запрос одной строкой :',sql_i
 st.write('хост :',host,' __порт :',port,' __БД :',db_name,' __логин :',username,' __пр :',password)
 
 
+# connection_string = postgresql://praktikum_student:Sdf4$2;d-d30pp@rc1b-wcoijxj3yxfsf3fs.mdb.yandexcloud.net:6432/data-analyst-afisha
+# engine = create_engine(connection_string)
 
 
 
