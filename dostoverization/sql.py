@@ -44,29 +44,29 @@ st.text('введите параметры подключения к БД:')
 
 # pd.io.sql.read_sql(request, con = engine)
 
-# # устанавливаем параметры
-# db_config = {'user': 'praktikum_student', # имя пользователя
-# 'pwd': 'Sdf4$2;d-d30pp', # пароль
-# 'host': 'rc1b-wcoijxj3yxfsf3fs.mdb.yandexcloud.net',
-# 'port': 6432, # порт подключения
-# 'db': 'data-analyst-afisha'} # название базы данных
-# connection_string = 'postgresql://{}:{}@{}:{}/{}'.format(db_config['user'],
-#  db_config['pwd'],
-#  db_config['host'],
-#  db_config['port'],
-#  db_config['db'])
-# # сохраняем коннектор
-# engine = create_engine(connection_string, connect_args={'sslmode':'require'})
+# устанавливаем параметры
+db_config = {'user': 'praktikum_student', # имя пользователя
+'pwd': 'Sdf4$2;d-d30pp', # пароль
+'host': 'rc1b-wcoijxj3yxfsf3fs.mdb.yandexcloud.net',
+'port': 6432, # порт подключения
+'db': 'data-analyst-afisha'} # название базы данных
+connection_string = 'postgresql://{}:{}@{}:{}/{}'.format(db_config['user'],
+ db_config['pwd'],
+ db_config['host'],
+ db_config['port'],
+ db_config['db'])
+# сохраняем коннектор
+engine = create_engine(connection_string, connect_args={'sslmode':'require'})
 
-# request = """
-# SELECT table_name,
-#     column_name,
-#     data_type,
-#     is_nullable,
-#     column_default
-# FROM information_schema.columns
-# WHERE table_schema = 'afisha'
-#     AND table_name IN ('purchases', 'events', 'city_id', 'regions')
-# ORDER BY  table_name, ordinal_position;
-# """
-# pd.io.sql.read_sql(request, con = engine)
+request = """
+SELECT table_name,
+    column_name,
+    data_type,
+    is_nullable,
+    column_default
+FROM information_schema.columns
+WHERE table_schema = 'afisha'
+    AND table_name IN ('purchases', 'events', 'city_id', 'regions')
+ORDER BY  table_name, ordinal_position;
+"""
+pd.io.sql.read_sql(request, con = engine)
