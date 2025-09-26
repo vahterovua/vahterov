@@ -71,10 +71,8 @@ def download_file(file_path):
 
 # Получаем список всех файлов в текущей директории
 files_in_current_dir = [f for f in os.listdir('.') if os.path.isfile(f)]
-
 st.title('Загрузка файлов')
 selected_file = st.selectbox("Выберите файл:", files_in_current_dir)
-
 if selected_file is not None:
     # Создаем ссылку на загрузку файла
     data = download_file(selected_file)
