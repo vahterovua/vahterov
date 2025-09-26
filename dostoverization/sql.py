@@ -65,4 +65,25 @@ if st.button("Выполнить запрос"):
 
 result_df.to_excel('результат запроса.xlsx')
 
+# Получаем путь к директории текущего скрипта
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+def main():
+    # Список файлов в текущей директории
+    files_in_current_directory = os.listdir(current_dir)
+    
+    # Отображаем название страницы
+    st.title("Файлы в текущей директории")
+    
+    for file in files_in_current_directory:
+        if not file.startswith('.'):
+            with open(os.path.join(current_dir, file), 'rb') as f:
+                bytes_data = f.read()
+            
+            # Создаем ссылку на скачивание
+            href = f'<a href="data:application/octet-stream;base64,{bytes_data.encode("base64")}" download="{file}">Скачать {file}</a>'
+            st.markdown(href, unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
 
