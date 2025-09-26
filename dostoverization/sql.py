@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
-
+import os
 
 st.title("SQL-запросы к БД PostgreSQL")
 
