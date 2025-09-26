@@ -63,7 +63,7 @@ if st.button("Выполнить запрос"):
 
 
 # Генерируем файл excel и предлагаем скачать
-    excel_file = to_excel(result_df)
+    excel_file = result_df.to_excel('data.xlsx')
     st.download_button(
         label="Нажмите сюда, чтобы скачать",
         data=excel_file,
