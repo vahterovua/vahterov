@@ -1,6 +1,6 @@
 import streamlit as st
-st.set_page_config(page_title="достоверизация", page_icon="📈")
-st.title("📈 Достоверизация")
+st.set_page_config(page_title="инструменты аналитика", page_icon="📈")
+st.title("📈 Инструменты аналитика")
 
 # Инициализация состояния сеанса
 if "logged_in" not in st.session_state:
