@@ -63,8 +63,8 @@ if st.button("Выполнить запрос"):
 
 
 st.write('выполненный запрос одной строкой :',sql_input)
-st.write('хост :',host)
-st.write('порт :',port)
+st.write('хост :',host,'  порт :',port)
+
 
 
 
