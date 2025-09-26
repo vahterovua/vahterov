@@ -63,11 +63,8 @@ if st.button("Выполнить запрос"):
 
 
 st.write('выполненный запрос одной строкой :',sql_input)
-
-
-par = pd.DataFrame({'хост': host})
-
-par
+st.write('хост :',host)
+st.write('порт :',port)
 
 
 
