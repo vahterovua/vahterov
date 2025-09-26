@@ -28,3 +28,7 @@ if user and password and host and port and database:
         st.error(f"Произошла ошибка: {e}")
 else:
     st.warning("Заполните все необходимые поля.")
+
+
+
+
