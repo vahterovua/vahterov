@@ -60,3 +60,13 @@ if st.button("Выполнить запрос"):
             st.error("Нет результата.")
     else:
         st.warning("Заполните все обязательные поля!")
+
+
+# Генерируем файл excel и предлагаем скачать
+    excel_file = to_excel(result_df)
+    st.download_button(
+        label="Нажмите сюда, чтобы скачать",
+        data=excel_file,
+        file_name='data.xlsx',
+        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
