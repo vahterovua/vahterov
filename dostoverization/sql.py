@@ -63,7 +63,4 @@ if st.button("Выполнить запрос"):
 
 
 
-result_df.to_excel('результат запроса.xlsx')
-
-
 
