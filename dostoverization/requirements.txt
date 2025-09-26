@@ -6,7 +6,7 @@ pymupdf
 lxml
 pygithub
 sqlalchemy
-pyspark.sql
+
 
 
 
