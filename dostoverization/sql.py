@@ -3,7 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 
-st.text('SQL запросы')
+st.title("SQL-запросы к БД PostgreSQL")
 
 # Функции для обработки взаимодействия с БД
 def create_connection(host, port, db_name, username, password):
@@ -31,7 +31,7 @@ def run_query(engine, query):
 
 
 # Интерфейс Streamlit
-st.title("Приложение для выполнения SQL-запросов к PostgreSQL")
+st.text("введите данные и нажмите 'Выполнить запрос'")
 
 # Форма для ввода данных подключения к базе данных
 host = st.text_input("Хост (например, localhost)", "")
