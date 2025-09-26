@@ -64,6 +64,9 @@ if st.button("Выполнить запрос"):
 
 
 result_df.to_excel('результат запроса.xlsx')
+# Преобразуем DataFrame в файл Excel
+output_file = df.to_excel(index=False, engine='openpyxl')
+
 # Генерируем ссылку для скачивания
 st.download_button(
     label="Скачать результат",
