@@ -92,3 +92,7 @@ if st.button('Прогноз'):
     fig = px.line(x=selected_device['Date'], y=selected_device['ActiveEnergy'], labels={'y':'Active Energy'}, title=f'Прогноз потребления для устройства {device_id}')
     fig.add_scatter(x=pd.date_range(end=end_date, periods=10)[1:], y=forecast, mode='lines+markers', name='Forecast')
     st.plotly_chart(fig)
+
+
+
+df
