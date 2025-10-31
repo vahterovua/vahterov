@@ -31,6 +31,7 @@ new_graf = st.Page("new_Просмотр-графиков.py", title="new_Про
 xml80020_excel = st.Page("конвертер-XML80020-Excel-сервер.py", title="конвертер xml80020-excel", default=False)
 excel_xml80020 = st.Page("excel-xml80020.py", title="excel-xml80020", default=False)
 sql = st.Page("sql.py", title="sql-запросы", default=False)
+dash_streamlit =  st.Page("dash_streamlit.py", title="dash_streamlit", default=False)
 
 
 
@@ -40,7 +41,7 @@ instr = st.Page("инструкция.py", title="инструкция", default
 if st.session_state.logged_in:
     # Создание боковых панелей и навигации
     pg = st.navigation({
-        " ": [file_processing, show_graph, file_processing_1tu, file_show,new_processing,new_graf,xml80020_excel,sql]
+        " ": [file_processing, show_graph, file_processing_1tu, file_show,new_processing,new_graf,xml80020_excel,sql,dash_streamlit]
     })
     # Показываем имя пользователя в боковой панели
     st.sidebar.markdown(f"Папка : {st.session_state.dir_name}")
