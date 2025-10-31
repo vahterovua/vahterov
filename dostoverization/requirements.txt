@@ -7,6 +7,7 @@ lxml
 pygithub
 sqlalchemy
 psycopg2-binary
+statsmodels
 
 
 
