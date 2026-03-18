@@ -31,7 +31,7 @@ new_graf = st.Page("new_Просмотр-графиков.py", title="new_Про
 xml80020_excel = st.Page("конвертер-XML80020-Excel-сервер.py", title="конвертер xml80020-excel", default=False)
 excel_xml80020 = st.Page("excel-xml80020.py", title="excel-xml80020", default=False)
 sql = st.Page("sql.py", title="sql-запросы", default=False)
-dash_streamlit =  st.Page("dash_streamlit.py", title="dash_streamlit", default=False)
+u10min =  st.Page("u10min.py", title="анализ профилей U 10мин", default=False)
 
 
 
