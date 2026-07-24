@@ -5,7 +5,7 @@ import pandas as pd
 import warnings
 import base64
 from PIL import Image
-import shutil
+from pandas.api.types import is_string_dtype
 
 pd.set_option('display.max_columns', None)
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -35,8 +35,8 @@ def prim(row, date_cols_values_flat):
         return 'Слишком большое отклонение'
     elif has_long_sequence_of_dashes(date_cols_values_flat):
         return 'Больше трех пропусков'
-    # Упрощаем проверку по индексам: лучше обращаться по именам колонок, если они есть
-    # Здесь оставляем как было, но в реальном коде лучше избегать iloc по жёстким номерам
+    # Осторожно с iloc: если структура изменится, индексы могут не совпасть.
+    # Оставляем как в оригинале, но лучше по именам колонок.
     elif is_string_dtype(row.iloc[2]) or is_string_dtype(row.iloc[3]) or row.iloc[3] == '-':
         return 'Отсутствует показание на начало или конец периода'
     elif is_string_dtype(row.iloc[4]) or is_string_dtype(row.iloc[5]) or pd.isna(row.iloc[4]) or pd.isna(row.iloc[5]):
@@ -47,9 +47,6 @@ def prim(row, date_cols_values_flat):
         return 'Требуется достоверизация'
     else:
         return 'Достоверно'
-
-
-from pandas.api.types import is_string_dtype
 
 
 def color_vol(value):
@@ -67,10 +64,8 @@ def color_prim(value):
 
 def color(row):
     styles = [''] * len(row)
-
-    # Безопасная работа с индексами колонок
     col_names = row.index.tolist()
-    
+
     if 'НБ, кВт*ч' in col_names:
         nb_idx = col_names.index('НБ, кВт*ч')
         if row['НБ, кВт*ч'] == 0:
@@ -80,33 +75,26 @@ def color(row):
         vol_idx = col_names.index('Обьем,% 30 минутных интервалов')
         if row['Обьем,% 30 минутных интервалов'] == 100:
             styles[vol_idx] = 'background-color: #c6efce'
-    
+
     if 'Примечание' in col_names:
         note_idx = col_names.index('Примечание')
         if row['Примечание'] == 'Достоверно':
             styles[note_idx] = 'background-color: #c6efce'
         elif row['Примечание'] == 'Требуется достоверизация':
             styles[note_idx] = 'background-color: #ffeb9c'
-    
+
     return styles
 
 
 def fill_provokes_dynamic(values_row, nb):
     """
     Корректирует данные с учетом провалов, основываясь на динамическом подходе.
-
-    Args:
-        values_row (pd.Series): Строка с данными потребления (получасовки).
-        nb (float): НБ, кВт*ч, доступный для заполнения провалов.
-
-    Returns:
-        pd.Series: Исправленные данные.
+    Возвращает pd.Series с теми же индексами, что и values_row.
     """
     values = values_row.values
     corrected = values.copy()
 
     overall_mean = np.mean(values)
-    # Защита от деления на ноль или NaN
     if np.isnan(overall_mean) or overall_mean == 0:
         overall_mean = 1.0
 
@@ -115,7 +103,6 @@ def fill_provokes_dynamic(values_row, nb):
     for i in range(1, len(values) - 1):
         prev_val, curr_val, next_val = values[i - 1], values[i], values[i + 1]
 
-        # Пропускаем участки с очень низкими значениями (возможно, нулевые интервалы)
         if (
             i > 1 and
             i + 1 < len(values) and
@@ -138,7 +125,6 @@ def fill_provokes_dynamic(values_row, nb):
     for i, _ in provokes:
         prev_val, curr_val, next_val = values[i - 1], values[i], values[i + 1]
         avg_val = (prev_val + next_val) / 2
-
         correction = avg_val - curr_val
 
         if correction <= nb:
@@ -170,14 +156,6 @@ def fill_provokes_dynamic(values_row, nb):
     return pd.Series(corrected, index=values_row.index)
 
 
-def download_file(filename):
-    with open(filename, "rb") as f:
-        bytes_data = f.read()
-        b64 = base64.b64encode(bytes_data).decode()
-        href = f'<a href="data:file/{filename};base64,{b64}" download="{filename}">{filename}</a>'
-    return href
-
-
 def check_files_exist(folder_path, filenames):
     if not os.path.exists(folder_path):
         return False
@@ -191,7 +169,6 @@ def upload_files(folder_path):
         for file in uploaded_files:
             with open(os.path.join(folder_path, file.name), "wb") as f:
                 f.write(file.getbuffer())
-
         if len(uploaded_files) > 0:
             st.success(f"{len(uploaded_files)} файлов успешно загружены в папку '{folder_path}'.")
     else:
@@ -223,7 +200,7 @@ upload_files(folder_path)
 
 if st.button("Обработать", key="processing"):
     required_filenames = ["30мин.xlsx", "мес.xlsx", "сут.xlsx"]
-    
+
     if not check_files_exist(folder_path, required_filenames):
         st.error(f"Загружены не все файлы! Пожалуйста, загрузите файлы: {required_filenames}")
     else:
@@ -232,9 +209,12 @@ if st.button("Обработать", key="processing"):
             file2 = pd.read_excel(os.path.join(folder_path, 'мес.xlsx'), decimal=',')
             file3 = pd.read_excel(os.path.join(folder_path, '30мин.xlsx'), decimal=',')
 
-            # Находим колонки с временными метками (формат ЧЧ:ММ.ДД или похожий)
             date_columns = [col for col in file3.columns if ":" in str(col) and "." in str(col)]
-            
+
+            if len(date_columns) == 0:
+                # Пробуем более мягкий критерий, если жесткий не сработал
+                date_columns = [col for col in file3.columns if ":" in str(col)]
+
             if len(date_columns) == 0:
                 st.error("Не найдены колонки с временными метками в файле '30мин.xlsx'. Проверьте формат названий колонок.")
                 raise ValueError("Нет колонок с временными данными")
@@ -260,7 +240,6 @@ if st.button("Обработать", key="processing"):
                 errors='coerce'
             ).round(1)
 
-            # Для применения prim передаём плоский массив значений колонок времени для этой строки
             result['Примечание'] = result.apply(
                 lambda row: prim(
                     row,
@@ -280,7 +259,7 @@ if st.button("Обработать", key="processing"):
             styled_result = result.style.apply(color, axis=1)
             styled_result.to_excel(result_file_path_report, engine='openpyxl', index=False)
 
-            # --- Блок коррекции получасовок (исправленная логика) ---
+            # --- Блок коррекции получасовок ---
             info = pd.read_excel(os.path.join(folder_path, 'Отчет_о_достоверизации.xlsx'))
             dates_df = pd.read_excel(os.path.join(folder_path, '30мин.xlsx'))
 
@@ -292,10 +271,8 @@ if st.button("Обработать", key="processing"):
             values_df = values_df[values_df['Примечание'] == 'Требуется достоверизация']
             values_df = values_df.drop(columns=['Примечание'], errors='ignore')
 
-            # Повторно определяем date_columns уже в values_df на случай различий
             date_columns_corr = [col for col in values_df.columns if ":" in str(col) and "." in str(col)]
             if len(date_columns_corr) == 0:
-                # Если не нашли — пробуем найти колонки, где есть только ":"
                 date_columns_corr = [col for col in values_df.columns if ":" in str(col)]
 
             if len(date_columns_corr) == 0:
@@ -307,11 +284,9 @@ if st.button("Обработать", key="processing"):
                 corrected_groups = []
                 for group_name, group_data in values_df.groupby('Идентификатор ТУ', sort=False):
                     group_corrected = group_data.copy()
-                    
-                    # В группе должна быть одна строка на ТУ; если строк несколько — берём первую
                     if len(group_corrected) == 0:
                         continue
-                    
+
                     first_row_index = group_corrected.index[0]
                     row_values = group_corrected.loc[first_row_index, date_columns_corr]
                     nb_value = group_corrected.loc[first_row_index, 'НБ, кВт*ч']
@@ -321,7 +296,7 @@ if st.button("Обработать", key="processing"):
                     else:
                         corrected_row = fill_provokes_dynamic(row_values, nb_value)
 
-                    # Безопасное присваивание значений в нужные колонки по индексу
+                    # Безопасное присваивание по индексу
                     group_corrected.loc[first_row_index, date_columns_corr] = corrected_row.values
                     corrected_groups.append(group_corrected)
 
@@ -329,4 +304,15 @@ if st.button("Обработать", key="processing"):
                     corrected_df = pd.concat(corrected_groups, ignore_index=True)
                     result_file_path_corr = os.path.join(folder_path, 'Получасовки.xlsx')
                     corrected_df.to_excel(result_file_path_corr, index=False)
-                    st.text(f'Обработано {len
+                    st.text(f'Обработано {len(corrected_df)} точек.')
+                else:
+                    st.warning("Нет точек, требующих коррекции (или все точки достоверны).")
+
+            st.markdown("**Обработка завершена.**")
+            st.markdown("Файл «Отчет_о_достоверизации.xlsx» создан.")
+            if os.path.exists(os.path.join(folder_path, 'Получасовки.xlsx')):
+                st.markdown("Файл «Получасовки.xlsx» (с коррекцией) также создан.")
+
+        except Exception as e:
+            st.error(f"Произошла ошибка при обработке: {str(e)}")
+            st.exception(
