@@ -2,24 +2,20 @@ import streamlit as st
 import os
 import numpy as np
 import pandas as pd
-import os
 import logging
 from pandas.api.types import is_string_dtype
 import warnings
-import streamlit as st
-import os
 import base64
 from PIL import Image
 import shutil
 
-values_porog = [0.5,0.45,0.4,0.35,0.3,0.25,0.2,0.15,0.1]
+values_porog = [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1]
 
 # Виджет selectbox для выбора порога
 porog = st.selectbox('Выберите чувствительность:', values_porog)
 
 # Выведем выбранное значение порога
 st.write(f"чувствительность: {porog}")
-
 
 pd.set_option('display.max_columns', None)
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -61,9 +57,12 @@ def color_vol(value):
     return 'background-color: #c6efce' if value['Обьем,% 30 минутных интервалов'] >= 90 else ''
 
 def color_prim(value):
-    if value == 'Требуется достоверизация': return 'background-color: #ffeb9c'
-    elif value == 'Достоверно': return 'background-color: #c6efce'
-    else: return ''
+    if value == 'Требуется достоверизация':
+        return 'background-color: #ffeb9c'
+    elif value == 'Достоверно':
+        return 'background-color: #c6efce'
+    else:
+        return ''
 
 def color(row):
     styles = [''] * len(row)
@@ -73,12 +72,12 @@ def color(row):
 
     if row['Обьем,% 30 минутных интервалов'] == 100:
         styles[row.index.get_loc('Обьем,% 30 минутных интервалов')] = 'background-color: #c6efce'
-    
+
     if row['Примечание'] == 'Достоверно':
         styles[row.index.get_loc('Примечание')] = 'background-color: #c6efce'
     elif row['Примечание'] == 'Требуется достоверизация':
         styles[row.index.get_loc('Примечание')] = 'background-color: #ffeb9c'
-    
+
     return styles
 
 def fill_provokes_dynamic(values_row, nb):
@@ -151,7 +150,6 @@ st.text("- например, базовые станции сотовых сет
 st.text("поиск резких уменьшений 30 минуток и заполнение средним значением")
 st.text("между предыдущей и следующей 30 минутками")
 st.text("в результате обработки формируется файл import для загрузки в Пирамиду 2.0, содержит только скорректированные 30 минутки")
-
 
 if "dir_name" in st.session_state:
     dir_name = st.session_state.dir_name
@@ -234,11 +232,15 @@ if st.button("Обработать", key="processing"):
         for group_name, group_data in values_df.groupby('Идентификатор ТУ'):
             group_corrected = group_data.copy()
 
-            # Выполняем коррекцию
-            group_corrected[date_columns] = fill_provokes_dynamic(
+            # === ИСПРАВЛЕНИЕ ЗДЕСЬ ===
+            # Выполняем коррекцию и получаем Series с корректными значениями
+            corrected_series = fill_provokes_dynamic(
                 group_corrected[date_columns].iloc[0],
                 group_corrected['НБ, кВт*ч'].iloc[0]
             )
+            # Присваиваем значения первой строке группы (предполагаем, что группа состоит из одной строки)
+            group_corrected.loc[group_corrected.index[0], date_columns] = corrected_series.values
+            # ==========================
 
             # Сохраняем оригинал
             original_values.append(group_data)
@@ -268,7 +270,6 @@ if st.button("Обработать", key="processing"):
         corrected_df = corrected_df.drop(columns=['НБ, кВт*ч'])
         result_file_path_getchasovki = os.path.join(folder_path, 'Получасовки_new.xlsx')
         corrected_df.to_excel(result_file_path_getchasovki, index=False)
-        #st.text(f'обработано {len(corrected_df)} точек')
 
         # Аналогично делаем для файла с изменениями
         changes_only_df = changes_only_df.drop(columns=['НБ, кВт*ч'], errors='ignore')
