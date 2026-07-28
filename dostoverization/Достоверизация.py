@@ -230,6 +230,7 @@ if st.button("Обработать", key="processing"):
 
         # Группа по идентификатору прибора учёта
         for group_name, group_data in values_df.groupby('Идентификатор ТУ'):
+            st.text(f"Обработка ТУ {group_name}_{group_data['ТУ'].iloc[0]}")
             group_corrected = group_data.copy()
 
             # === ИСПРАВЛЕНИЕ ЗДЕСЬ ===
