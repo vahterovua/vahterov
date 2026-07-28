@@ -276,7 +276,7 @@ if st.button("Обработать", key="processing"):
         changes_only_df = changes_only_df.drop(columns=['НБ, кВт*ч'], errors='ignore')
         result_changes_file_path = os.path.join(folder_path, f'import_{porog}.xlsx')
         changes_only_df.to_excel(result_changes_file_path, index=False)
-        st.text("обработка")
+        st.text(f"{datetime.now()} обработка")
 
         # Отчёт о выполнении
         st.markdown(f'Обработка завершена, чувствительность: {porog} , вот отчёт о достоверизации')
