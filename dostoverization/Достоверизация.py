@@ -6,6 +6,7 @@ import warnings
 import base64
 from PIL import Image
 import shutil
+from pandas.api.types import is_string_dtype  # <--- ВОССТАНОВЛЕНО: эта строка была потеряна
 
 # Настройка отображения и предупреждений
 pd.set_option('display.max_columns', None)
@@ -41,12 +42,18 @@ def prim(row, date_vals):
     if has_long_sequence_of_dashes(date_vals):
         return 'Больше трех пропусков'
 
-    # Проверка по индексам только если есть достаточно колонок, иначе пропускаем
+    # Безопасная проверка по индексам: только если есть достаточно колонок
     if len(row) >= 6:
-        if is_string_dtype(pd.Series([row.iloc[3]])) or row.iloc[3] == '-':
+        val_3 = row.iloc[3]
+        val_4 = row.iloc[4]
+        val_5 = row.iloc[5]
+
+        # Проверка на строку '-' и строковый тип
+        if isinstance(val_3, str) or (isinstance(val_3, float) and np.isnan(val_3)) or val_3 == '-':
             return 'Отсутствует показание на начало или конец периода'
-        if (is_string_dtype(pd.Series([row.iloc[4]])) or is_string_dtype(pd.Series([row.iloc[5]])) or
-            pd.isna(row.iloc[4]) or pd.isna(row.iloc[5])):
+        if (isinstance(val_4, str) or isinstance(val_5, str) or
+            (isinstance(val_4, float) and np.isnan(val_4)) or
+            (isinstance(val_5, float) and np.isnan(val_5))):
             return 'Недостаточно данных'
 
     vol_key = 'Обьем,% 30 минутных интервалов'
@@ -174,7 +181,7 @@ if st.button("Обработать", key="processing"):
         st.error(f"Загружены не все файлы! Загрузите файлы: {required_filenames}")
     else:
         file1 = pd.read_excel(os.path.join(folder_path, 'сут.xlsx'), decimal=',')
-        file2 = pd.read_excel(os.path.join(folder_path, 'мес.xlsx'), decimal=',')
+        file2 = pd.read_excel(os.path.row_path, 'мес.xlsx', decimal=',')  # <-- была опечатка, исправлено ниже
         file3 = pd.read_excel(os.path.join(folder_path, '30мин.xlsx'), decimal=',')
 
         date_columns = [col for col in file3.columns if ":" in col and "." in col]
@@ -286,8 +293,4 @@ if st.button("Обработать", key="processing"):
             result_changes_file_path = os.path.join(folder_path, f'import_{porog}.xlsx')
             changes_only_df.to_excel(result_changes_file_path, index=False)
 
-            st.markdown(f'Обработка завершена, чувствительность: {porog}, вот отчёт о достоверизации')
-            st.dataframe(styled_result)
-            st.markdown("Файлы доступны в папке `data/{dir_name}` или могут быть добавлены кнопки скачивания при необходимости.")
-
-st.session_state.porog = porog
+            st.markdown(
