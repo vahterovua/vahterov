@@ -253,13 +253,14 @@ if st.button("Обработать", key="processing"):
             for column in additional_columns:
                 if column in group_data.columns:
                     diff_rows[column] = group_data[column].iloc[0]
+                    
 
             # Собираем изменённые строки
             changes_only_df = pd.concat([changes_only_df, diff_rows], ignore_index=True)
 
             # Добавляем исправленную версию
             corrected_groups.append(group_corrected)
-            st.text("обработка")
+            
 
         # Объединяем исправленные группы
         if corrected_groups:
@@ -276,7 +277,7 @@ if st.button("Обработать", key="processing"):
         changes_only_df = changes_only_df.drop(columns=['НБ, кВт*ч'], errors='ignore')
         result_changes_file_path = os.path.join(folder_path, f'import_{porog}.xlsx')
         changes_only_df.to_excel(result_changes_file_path, index=False)
-        st.text(f"{datetime.now()} обработка")
+        st.text(f" обработка")
 
         # Отчёт о выполнении
         st.markdown(f'Обработка завершена, чувствительность: {porog} , вот отчёт о достоверизации')
