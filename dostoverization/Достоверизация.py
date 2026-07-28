@@ -259,6 +259,7 @@ if st.button("Обработать", key="processing"):
 
             # Добавляем исправленную версию
             corrected_groups.append(group_corrected)
+            st.text("обработка")
 
         # Объединяем исправленные группы
         if corrected_groups:
