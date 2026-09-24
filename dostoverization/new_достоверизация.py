@@ -2,17 +2,14 @@ import streamlit as st
 import os
 import numpy as np
 import pandas as pd
-import os
 import logging
 from pandas.api.types import is_string_dtype
 import warnings
-import streamlit as st
-import os
 import base64
 from PIL import Image
 import shutil
 
-values_porog = [0.5,0.45,0.4,0.35,0.3,0.25,0.2,0.15,0.1]
+values_porog = [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1]
 
 # Виджет selectbox для выбора порога
 porog = st.selectbox('Выберите чувствительность:', values_porog)
@@ -20,12 +17,13 @@ porog = st.selectbox('Выберите чувствительность:', value
 # Выведем выбранное значение порога
 st.write(f"чувствительность: {porog}")
 
-
 pd.set_option('display.max_columns', None)
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+
 def count_non_numeric(row):
     return row.isna().sum()
+
 
 def has_long_sequence_of_dashes(date_cols):
     dash_count = 0
@@ -37,6 +35,7 @@ def has_long_sequence_of_dashes(date_cols):
         else:
             dash_count = 0
     return False
+
 
 def prim(row, date_cols):
     nb_kwh = row.get('НБ, кВт*ч', np.nan)
@@ -57,13 +56,19 @@ def prim(row, date_cols):
     else:
         return 'Достоверно'
 
+
 def color_vol(value):
     return 'background-color: #c6efce' if value['Обьем,% 30 минутных интервалов'] >= 90 else ''
 
+
 def color_prim(value):
-    if value == 'Требуется достоверизация': return 'background-color: #ffeb9c'
-    elif value == 'Достоверно': return 'background-color: #c6efce'
-    else: return ''
+    if value == 'Требуется достоверизация':
+        return 'background-color: #ffeb9c'
+    elif value == 'Достоверно':
+        return 'background-color: #c6efce'
+    else:
+        return ''
+
 
 def color(row):
     styles = [''] * len(row)
@@ -73,16 +78,21 @@ def color(row):
 
     if row['Обьем,% 30 минутных интервалов'] == 100:
         styles[row.index.get_loc('Обьем,% 30 минутных интервалов')] = 'background-color: #c6efce'
-    
+
     if row['Примечание'] == 'Достоверно':
         styles[row.index.get_loc('Примечание')] = 'background-color: #c6efce'
     elif row['Примечание'] == 'Требуется достоверизация':
         styles[row.index.get_loc('Примечание')] = 'background-color: #ffeb9c'
-    
+
     return styles
 
+
 def fill_provokes_dynamic(values_row, nb):
-    values = values_row.values
+    """
+    Возвращает numpy-массив скорректированных значений.
+    Больше не оборачиваем в pd.Series, чтобы избежать проблем с выравниванием индексов.
+    """
+    values = np.asarray(values_row.values, dtype=float)
     corrected = values.copy()
 
     overall_mean = np.mean(values)
@@ -121,7 +131,8 @@ def fill_provokes_dynamic(values_row, nb):
             nb = 0
             break
 
-    return pd.Series(corrected, index=values_row.index)
+    return corrected
+
 
 def download_file(filename):
     with open(filename, "rb") as f:
@@ -130,11 +141,13 @@ def download_file(filename):
         href = f'<a href="data:file/{filename};base64,{b64}" download="{filename}">{filename}</a>'
     return href
 
+
 def check_files_exist(folder_path, filenames):
     files_in_folder = os.listdir(folder_path)
     return all(filename in files_in_folder for filename in filenames)
 
-def upload_files():
+
+def upload_files(folder_path):
     uploaded_files = st.file_uploader("Выберите файлы для загрузки", accept_multiple_files=True)
     if uploaded_files is not None:
         for file in uploaded_files:
@@ -145,13 +158,13 @@ def upload_files():
     else:
         st.info("Файлы еще не были выбраны.")
 
+
 st.title("new_достоверизация-опытная эксплуатация")
 st.text("- преимущественно подходит для точек учета со стабильным графиком нагрузки")
 st.text("- например, базовые станции сотовых сетей, освещение дорог")
 st.text("поиск резких уменьшений 30 минуток и заполнение средним значением")
 st.text("между предыдущей и следующей 30 минутками")
 st.text("в результате обработки формируется файл import для загрузки в Пирамиду 2.0, содержит только скорректированные 30 минутки")
-
 
 if "dir_name" in st.session_state:
     dir_name = st.session_state.dir_name
@@ -168,119 +181,164 @@ if "dir_name" in st.session_state:
     st.markdown("""4. Дождаться сообщения 'Обработка завершена'. """)
     st.title("Загрузить файлы")
 
-    upload_files()
+    upload_files(folder_path)
 
 if st.button("Обработать", key="processing"):
-    required_filenames = ["30мин.xlsx", "мес.xlsx", "сут.xlsx"]
-    if check_files_exist(folder_path, required_filenames):
-        file1 = pd.read_excel(os.path.join(folder_path, 'сут.xlsx'), decimal=',')
-        file2 = pd.read_excel(os.path.join(folder_path, 'мес.xlsx'), decimal=',')
-        file3 = pd.read_excel(os.path.join(folder_path, '30мин.xlsx'), decimal=',')
+    if "dir_name" not in st.session_state:
+        st.error("Сначала выберите/создайте директорию (dir_name не задан).")
+    else:
+        required_filenames = ["30мин.xlsx", "мес.xlsx", "сут.xlsx"]
+        if check_files_exist(folder_path, required_filenames):
+            file1 = pd.read_excel(os.path.join(folder_path, 'сут.xlsx'), decimal=',')
+            file2 = pd.read_excel(os.path.join(folder_path, 'мес.xlsx'), decimal=',')
+            file3 = pd.read_excel(os.path.join(folder_path, '30мин.xlsx'), decimal=',')
 
-        date_columns = [col for col in file3.columns if ":" in col and '.' in col]
+            date_columns = [col for col in file3.columns if ":" in col and '.' in col]
 
-        file3[date_columns] = file3[date_columns].replace(["-", "", " "], np.nan).apply(pd.to_numeric, errors='coerce')
+            file3[date_columns] = file3[date_columns].replace(["-", "", " "], np.nan).apply(pd.to_numeric, errors='coerce')
 
-        sum_30_min_intervals = file3[date_columns].sum(axis=1)
+            sum_30_min_intervals = file3[date_columns].sum(axis=1)
 
-        volume_percent = (((len(date_columns)) - file3[date_columns].apply(count_non_numeric, axis=1)) / len(date_columns) * 100).round(1)
+            volume_percent = (((len(date_columns)) - file3[date_columns].apply(count_non_numeric, axis=1)) / len(date_columns) * 100).round(1)
 
-        df3 = pd.concat([file3[['Идентификатор ТУ']], sum_30_min_intervals.rename('Сумма 30 минутных интервалов, кВт*ч'), volume_percent.rename('Обьем,% 30 минутных интервалов')], axis=1)
-
-        df1 = file1.iloc[:, [0, 1, 4, -1]]
-
-        df2 = file2.iloc[:, [0, 4]].rename(columns={file2.columns[4]: 'Расход по разности показаний, кВт*ч'})
-
-        df2['Расход по разности показаний, кВт*ч'] = pd.to_numeric(df2['Расход по разности показаний, кВт*ч'], errors='coerce').round(1)
-
-        result = df1.merge(df2, on='Идентификатор ТУ', how='outer').merge(df3, on='Идентификатор ТУ', how='outer')
-
-        result['НБ, кВт*ч'] = pd.to_numeric(result['Расход по разности показаний, кВт*ч'] - result['Сумма 30 минутных интервалов, кВт*ч'], errors='coerce').round(1)
-
-        result['Примечание'] = result.apply(lambda row: prim(row, file3.loc[file3['Идентификатор ТУ'] == row['Идентификатор ТУ'], date_columns].values.flatten()), axis=1)
-
-        columns = result.columns.tolist()
-        nb_index = columns.index('НБ, кВт*ч')
-        volume_index = columns.index('Обьем,% 30 минутных интервалов')
-        columns[nb_index], columns[volume_index] = columns[volume_index], columns[nb_index]
-        result = result[columns]
-
-        result_file_path = os.path.join(folder_path, 'Отчет_о_достоверизации_new.xlsx')
-
-        styled_result = result.style.apply(color, axis=1)
-        styled_result.to_excel(result_file_path, engine='openpyxl', index=False)
-
-        # Загрузка данных
-        info = pd.read_excel(os.path.join(folder_path, 'Отчет_о_достоверизации_new.xlsx'))
-        dates_df = pd.read_excel(os.path.join(folder_path, '30мин.xlsx'))
-
-        values_df = dates_df.merge(info[['Идентификатор ТУ', 'НБ, кВт*ч', 'Примечание']], on='Идентификатор ТУ', how='outer')
-        values_df = values_df[values_df['Примечание'] == 'Требуется достоверизация']
-        values_df = values_df.drop(columns=['Примечание'])
-
-        # Выделяем только столбцы с временными метками
-        date_columns = [col for col in values_df.columns if ":" in col and '.' in col]
-
-        # Преобразуем временные столбцы в числовой формат и заполняем пропуска нулями
-        values_df[date_columns] = values_df[date_columns].apply(pd.to_numeric, errors='coerce')
-        values_df[date_columns] = values_df[date_columns].fillna(0)
-
-        # Сборка изменённых строк
-        corrected_groups = []
-        original_values = []
-        changes_only_df = pd.DataFrame()
-
-        # Группа по идентификатору прибора учёта
-        for group_name, group_data in values_df.groupby('Идентификатор ТУ'):
-            group_corrected = group_data.copy()
-
-            # Выполняем коррекцию
-            group_corrected[date_columns] = fill_provokes_dynamic(
-                group_corrected[date_columns].iloc[0],
-                group_corrected['НБ, кВт*ч'].iloc[0]
+            df3 = pd.concat(
+                [
+                    file3[['Идентификатор ТУ']],
+                    sum_30_min_intervals.rename('Сумма 30 минутных интервалов, кВт*ч'),
+                    volume_percent.rename('Обьем,% 30 минутных интервалов')
+                ],
+                axis=1
             )
 
-            # Сохраняем оригинал
-            original_values.append(group_data)
+            df1 = file1.iloc[:, [0, 1, 4, -1]]
 
-            # Извлекаем изменённые строки
-            diff_rows = group_corrected.where(group_data != group_corrected, other=np.nan).dropna(how='all')
+            df2 = file2.iloc[:, [0, 4]].rename(columns={file2.columns[4]: 'Расход по разности показаний, кВт*ч'})
 
-            # Дополняем изменённые строки дополнительными столбцами
-            additional_columns = ['Идентификатор ТУ', 'ТУ', 'Идентификатор параметра', 'Параметр']
-            for column in additional_columns:
-                if column in group_data.columns:
-                    diff_rows[column] = group_data[column].iloc[0]
+            df2['Расход по разности показаний, кВт*ч'] = pd.to_numeric(
+                df2['Расход по разности показаний, кВт*ч'], errors='coerce'
+            ).round(1)
 
-            # Собираем изменённые строки
-            changes_only_df = pd.concat([changes_only_df, diff_rows], ignore_index=True)
+            result = df1.merge(df2, on='Идентификатор ТУ', how='outer').merge(df3, on='Идентификатор ТУ', how='outer')
 
-            # Добавляем исправленную версию
-            corrected_groups.append(group_corrected)
+            result['НБ, кВт*ч'] = pd.to_numeric(
+                result['Расход по разности показаний, кВт*ч'] - result['Сумма 30 минутных интервалов, кВт*ч'],
+                errors='coerce'
+            ).round(1)
 
-        # Объединяем исправленные группы
-        if corrected_groups:
-            corrected_df = pd.concat(corrected_groups, ignore_index=True)
+            result['Примечание'] = result.apply(
+                lambda row: prim(
+                    row,
+                    file3.loc[file3['Идентификатор ТУ'] == row['Идентификатор ТУ'], date_columns].values.flatten()
+                ),
+                axis=1
+            )
+
+            columns = result.columns.tolist()
+            nb_index = columns.index('НБ, кВт*ч')
+            volume_index = columns.index('Обьем,% 30 минутных интервалов')
+            columns[nb_index], columns[volume_index] = columns[volume_index], columns[nb_index]
+            result = result[columns]
+
+            result_file_path = os.path.join(folder_path, 'Отчет_о_достоверизации_new.xlsx')
+
+            styled_result = result.style.apply(color, axis=1)
+            styled_result.to_excel(result_file_path, engine='openpyxl', index=False)
+
+            # Загрузка данных
+            info = pd.read_excel(os.path.join(folder_path, 'Отчет_о_достоверизации_new.xlsx'))
+            dates_df = pd.read_excel(os.path.join(folder_path, '30мин.xlsx'))
+
+            values_df = dates_df.merge(
+                info[['Идентификатор ТУ', 'НБ, кВт*ч', 'Примечание']],
+                on='Идентификатор ТУ',
+                how='outer'
+            )
+            values_df = values_df[values_df['Примечание'] == 'Требуется достоверизация']
+            values_df = values_df.drop(columns=['Примечание'])
+
+            # Выделяем только столбцы с временными метками
+            date_columns = [col for col in values_df.columns if ":" in col and '.' in col]
+
+            # Преобразуем временные столбцы в числовой формат и заполняем пропуска нулями
+            values_df[date_columns] = values_df[date_columns].apply(pd.to_numeric, errors='coerce')
+            values_df[date_columns] = values_df[date_columns].fillna(0)
+
+            # Сборка изменённых строк
+            corrected_groups = []
+            original_values = []
+            changes_only_df = pd.DataFrame()
+
+            # Группа по идентификатору прибора учёта
+            for group_name, group_data in values_df.groupby('Идентификатор ТУ'):
+                if group_data.empty:
+                    continue
+
+                group_corrected = group_data.copy().reset_index(drop=True)
+
+                # Берём первую строку группы для коррекции
+                row_for_correction = group_corrected[date_columns].iloc[0]
+                nb_value = group_corrected['НБ, кВт*ч'].iloc[0]
+
+                # Проверка, что все нужные столбцы есть
+                missing_cols = [c for c in date_columns if c not in group_corrected.columns]
+                if missing_cols:
+                    st.warning(f"Для ТУ {group_name} отсутствуют столбцы: {missing_cols[:5]}... пропуск.")
+                    continue
+
+                # Выполняем коррекцию — теперь получаем numpy-массив
+                corrected_values = fill_provokes_dynamic(row_for_correction, nb_value)
+
+                # Присваиваем по позициям (numpy-массив, без выравнивания по индексу)
+                group_corrected.loc[:, date_columns] = np.tile(
+                    corrected_values, (len(group_corrected), 1)
+                )
+
+                # Сохраняем оригинал
+                original_values.append(group_data)
+
+                # Извлекаем изменённые строки
+                diff_mask = group_data.reset_index(drop=True)[date_columns].values != group_corrected[date_columns].values
+                diff_rows = group_corrected[date_columns].where(diff_mask, other=np.nan).dropna(how='all')
+
+                if diff_rows.empty:
+                    corrected_groups.append(group_corrected)
+                    continue
+
+                # Дополняем изменённые строки дополнительными столбцами
+                additional_columns = ['Идентификатор ТУ', 'ТУ', 'Идентификатор параметра', 'Параметр']
+                for column in additional_columns:
+                    if column in group_data.columns:
+                        diff_rows[column] = group_data[column].iloc[0]
+
+                # Собираем изменённые строки
+                changes_only_df = pd.concat([changes_only_df, diff_rows], ignore_index=True)
+
+                # Добавляем исправленную версию
+                corrected_groups.append(group_corrected)
+
+            # Объединяем исправленные группы
+            if corrected_groups:
+                corrected_df = pd.concat(corrected_groups, ignore_index=True)
+            else:
+                corrected_df = pd.DataFrame(columns=values_df.columns)
+                print("Нет данных для объединения")
+
+            # Убираем столбец 'НБ,кВт*ч' перед записью в файл
+            corrected_df = corrected_df.drop(columns=['НБ, кВт*ч'], errors='ignore')
+            result_file_path_getchasovki = os.path.join(folder_path, 'Получасовки_new.xlsx')
+            corrected_df.to_excel(result_file_path_getchasovki, index=False)
+
+            # Аналогично делаем для файла с изменениями
+            changes_only_df = changes_only_df.drop(columns=['НБ, кВт*ч'], errors='ignore')
+            result_changes_file_path = os.path.join(folder_path, f'import_{porog}.xlsx')
+            changes_only_df.to_excel(result_changes_file_path, index=False)
+
+            # Отчёт о выполнении
+            st.markdown(f'Обработка завершена, чувствительность: {porog} , вот отчёт о достоверизации')
+            styled_result
+
+            st.markdown("""Файл для скачивания находится во вкладке 'Просмотр файлов'""")
         else:
-            print("Нет данных для объединения")
-
-        # Убираем столбец 'НБ,кВт*ч' перед записью в файл
-        corrected_df = corrected_df.drop(columns=['НБ, кВт*ч'])
-        result_file_path_getchasovki = os.path.join(folder_path, 'Получасовки_new.xlsx')
-        corrected_df.to_excel(result_file_path_getchasovki, index=False)
-        #st.text(f'обработано {len(corrected_df)} точек')
-
-        # Аналогично делаем для файла с изменениями
-        changes_only_df = changes_only_df.drop(columns=['НБ, кВт*ч'], errors='ignore')
-        result_changes_file_path = os.path.join(folder_path, f'import_{porog}.xlsx')
-        changes_only_df.to_excel(result_changes_file_path, index=False)
-
-        # Отчёт о выполнении
-        st.markdown(f'Обработка завершена, чувствительность: {porog} , вот отчёт о достоверизации')
-        styled_result
-
-        st.markdown("""Файл для скачивания находится во вкладке 'Просмотр файлов'""")
-    else:
-        st.error(f"""Загружены не все файлы! Загрузите файлы: {required_filenames}""")
+            st.error(f"""Загружены не все файлы! Загрузите файлы: {required_filenames}""")
 
 st.session_state.porog = porog
