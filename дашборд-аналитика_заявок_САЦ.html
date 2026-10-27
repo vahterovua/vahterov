@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Аналитический дашборд по заявкам</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root { --bg:#f4f6fb; --card:#fff; --text:#1f2937; --muted:#6b7280; --accent:#2563eb; --accent-2:#7c3aed; --green:#10b981; --red:#ef4444; --amber:#f59e0b; --border:#e5e7eb; --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04); }
+  * { box-sizing: border-box; }
+  html, body { width: 100%; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--text); font-size:14px; }
+  header { background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#7c3aed 100%); color:#fff; padding:20px 28px; box-shadow:0 2px 10px rgba(0,0,0,.1); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  header h1 { margin:0 0 4px; font-size:22px; font-weight:700; }
+  header p { margin:0; opacity:.85; font-size:13px; }
+  .header-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .container { width:100%; padding:20px 24px; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; background:var(--card); padding:14px 18px; border-radius:12px; box-shadow:var(--shadow); margin-bottom:18px; }
+  .toolbar label { font-weight:600; color:var(--muted); font-size:13px; }
+  .toolbar input[type="text"] { padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; background:#fff; color:var(--text); min-width:160px; }
+  .toolbar input[type="text"]:focus { outline:2px solid var(--accent); }
+  .file-wrap { position:relative; overflow:hidden; display:inline-block; }
+  .file-wrap input[type="file"] { position:absolute; left:0; top:0; opacity:0; width:100%; height:100%; cursor:pointer; }
+  .btn { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; padding:9px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; cursor:pointer; transition:background .15s,transform .05s; }
+  .btn:hover { background:#1d4ed8; } .btn:active { transform:scale(.98); }
+  .btn.secondary { background:#6b7280; } .btn.secondary:hover { background:#4b5563; }
+  .btn.success { background:#10b981; } .btn.success:hover { background:#059669; }
+  .btn.danger { background:#ef4444; } .btn.danger:hover { background:#dc2626; }
+  .spacer { flex:1; }
+
+  /* ---- Multi-select ---- */
+  .ms { position:relative; display:inline-block; min-width:170px; }
+  .ms-btn {
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:8px 12px; border:1px solid var(--border); border-radius:8px;
+    font-size:13px; background:#fff; color:var(--text); cursor:pointer;
+    text-align:left; width:100%; user-select:none;
+  }
+  .ms-btn:hover { border-color:#cbd5e1; }
+  .ms-btn:focus { outline:2px solid var(--accent); }
+  .ms-btn .ms-caret { color:var(--muted); font-size:10px; transition: transform .15s; }
+  .ms.open .ms-caret { transform: rotate(180deg); }
+  .ms-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ms-panel {
+    display:none; position:absolute; top: calc(100% + 4px); left:0;
+    min-width:100%; max-width:340px; max-height:320px; overflow:auto;
+    background:#fff; border:1px solid var(--border); border-radius:10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 100; padding: 8px;
+  }
+  .ms.open .ms-panel { display:block; }
+  .ms-actions { display:flex; gap:6px; padding: 2px 4px 8px; border-bottom:1px solid var(--border); margin-bottom: 6px; }
+  .ms-actions button {
+    background:#f3f4f6; border:none; border-radius:6px; padding:4px 10px;
+    font-size:12px; font-weight:600; cursor:pointer; color:#374151;
+  }
+  .ms-actions button:hover { background:#e5e7eb; }
+  .ms-item { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; cursor:pointer; font-size:13px; }
+  .ms-item:hover { background:#f3f4f6; }
+  .ms-item input[type="checkbox"] { margin:0; cursor:pointer; }
+  .ms-item .cnt { margin-left:auto; color:var(--muted); font-size:11px; }
+
+  /* ---- KPI ---- */
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:18px; }
+  .kpi { background:var(--card); border-radius:12px; padding:16px 18px; box-shadow:var(--shadow); border-left:4px solid var(--accent); }
+  .kpi .label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.5px; font-weight:600; }
+  .kpi .value { font-size:26px; font-weight:700; margin-top:6px; }
+  .kpi .sub { color:var(--muted); font-size:12px; margin-top:4px; }
+  .kpi.green { border-left-color:var(--green); } .kpi.red { border-left-color:var(--red); }
+  .kpi.amber { border-left-color:var(--amber); } .kpi.purple { border-left-color:var(--accent-2); }
+
+  /* ---- Tabs ---- */
+  .tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; border-bottom:2px solid var(--border); }
+  .tab { padding:10px 18px; background:transparent; border:none; border-bottom:3px solid transparent; font-size:14px; font-weight:600; color:var(--muted); cursor:pointer; border-radius:8px 8px 0 0; transition:color .15s,border-color .15s,background .15s; }
+  .tab:hover { color:var(--accent); background:#f3f4f6; }
+  .tab.active { color:var(--accent); border-bottom-color:var(--accent); background:#eff6ff; }
+  .tab .badge { display:inline-block; background:#e5e7eb; color:#374151; font-size:11px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:6px; }
+  .tab.active .badge { background:var(--accent); color:#fff; }
+
+  /* ---- Sub-toolbar внутри вкладки ---- */
+  .subbar {
+    display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+    background:var(--card); padding:12px 16px; border-radius:12px;
+    box-shadow:var(--shadow); margin-bottom:16px;
+  }
+  .subbar label { font-weight:600; color:var(--muted); font-size:13px; }
+
+  /* ---- Grid ---- */
+  .grid { display:grid; grid-template-columns:repeat(12,1fr); gap:18px; }
+  .card { background:var(--card); border-radius:12px; padding:18px 20px; box-shadow:var(--shadow); min-width:0; }
+  .card h3 { margin:0 0 14px; font-size:15px; font-weight:700; color:var(--text); display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .card h3 small { color:var(--muted); font-weight:500; font-size:12px; }
+  .col-4 { grid-column:span 4; } .col-6 { grid-column:span 6; }
+  .col-8 { grid-column:span 8; } .col-12 { grid-column:span 12; }
+  @media (max-width:1100px) { .col-4,.col-6,.col-8 { grid-column:span 12; } }
+  .chart-wrap { position:relative; height:280px; } .chart-wrap.tall { height:360px; }
+
+  /* ---- Table ---- */
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { padding:8px 10px; text-align:left; border-bottom:1px solid var(--border); }
+  th { background:#f9fafb; color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.3px; position:sticky; top:0; z-index:1; }
+  tr:hover td { background:#f9fafb; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; white-space:nowrap; }
+  .tag.ok { background:#d1fae5; color:#065f46; } .tag.bad { background:#fee2e2; color:#991b1b; }
+  .tag.cat-plan { background:#dbeafe; color:#1e40af; } .tag.cat-unplan { background:#fef3c7; color:#92400e; } .tag.cat-urgent { background:#fce7f3; color:#9d174d; }
+  .empty { text-align:center; padding:60px 20px; color:var(--muted); background:var(--card); border-radius:12px; box-shadow:var(--shadow); border:2px dashed var(--border); }
+  .empty h2 { color:var(--text); margin-bottom:8px; }
+  .scroll { max-height:420px; overflow:auto; border:1px solid var(--border); border-radius:8px; }
+  .scroll::-webkit-scrollbar { width:8px; height:8px; } .scroll::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+  #toast { position:fixed; bottom:24px; right:24px; background:#1f2937; color:#fff; padding:12px 20px; border-radius:10px; font-size:13px; font-weight:600; box-shadow:0 4px 16px rgba(0,0,0,.2); opacity:0; transform:translateY(20px); transition:opacity .25s,transform .25s; z-index:9999; pointer-events:none; max-width:360px; }
+  #toast.show { opacity:1; transform:translateY(0); } #toast.ok { background:#059669; } #toast.err { background:#dc2626; }
+  .summary-block { font-size:13px; line-height:1.7; color:#374151; } .summary-block b { color:#111827; } .summary-block ul { margin:6px 0 0 18px; padding:0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Аналитический дашборд по заявкам</h1>
+    <p>Загрузите Excel-файл формата «Образец_для_даш.xlsx» — дашборд построится автоматически</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn success" id="exportPdfBtn">📄 PDF</button>
+    <button class="btn success" id="exportXlsxBtn">📊 Excel</button>
+    <button class="btn success" id="exportHtmlBtn">🌐 HTML</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Основная панель управления -->
+  <div class="toolbar">
+    <div class="file-wrap btn">
+      📁 Загрузить Excel
+      <input type="file" id="fileInput" accept=".xlsx,.xls">
+    </div>
+    <button class="btn secondary" id="loadSampleBtn">Демо-данные</button>
+    <button class="btn danger" id="resetFiltersBtn">✖ Сбросить</button>
+
+    <div class="spacer"></div>
+
+    <label for="searchObject">Наименование:</label>
+    <input type="text" id="searchObject" placeholder="Поиск по объекту…">
+
+    <label for="searchId">ИД:</label>
+    <input type="text" id="searchId" placeholder="Например: 270361, 278541">
+
+    <label>Месяц:</label>
+    <div id="msMonth"></div>
+
+    <label>Категория:</label>
+    <div id="msCategory"></div>
+
+    <label>Регламент:</label>
+    <div id="msStatus"></div>
+  </div>
+
+  <!-- Вкладки филиалов -->
+  <div class="tabs" id="tabs"></div>
+
+  <!-- Подпанель с РЭС -->
+  <div class="subbar" id="subbar" style="display:none;">
+    <label>РЭС:</label>
+    <div id="msRes"></div>
+    <span class="spacer"></span>
+    <span style="color:var(--muted); font-size:12px;" id="subbarInfo"></span>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+    <div class="kpis" id="kpis"></div>
+    <div class="grid" id="gridRoot">
+
+      <div class="card col-12">
+        <h3>Сводка по филиалу <small id="summaryTitle"></small></h3>
+        <div class="summary-block" id="summaryBlock"></div>
+      </div>
+
+      <div class="card col-4">
+        <h3>Заявки по РЭСам <small>топ-10</small></h3>
+        <div class="chart-wrap"><canvas id="chartRes"></canvas></div>
+      </div>
+
+      <div class="card col-4">
+        <h3>Категории заявок</h3>
+        <div class="chart-wrap"><canvas id="chartCategory"></canvas></div>
+      </div>
+
+      <div class="card col-4">
+        <h3>Соответствие регламенту</h3>
+        <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+      </div>
+
+      <div class="card col-8">
+        <h3>Динамика заявок по месяцам <small>с разбивкой по статусу</small></h3>
+        <div class="chart-wrap tall"><canvas id="chartMonth"></canvas></div>
+      </div>
+
+      <div class="card col-4">
+        <h3>Средний срок оформления</h3>
+        <div class="chart-wrap tall"><canvas id="chartDuration"></canvas></div>
+      </div>
+
+      <div class="card col-12">
+        <h3>Детальная таблица заявок <small id="tableCount"></small></h3>
+        <div class="scroll">
+          <table id="dataTable">
+            <thead>
+              <tr>
+                <th>ИД</th><th>Филиал</th><th>РЭС</th><th>Объект</th>
+                <th>Открытие</th><th>Категория</th><th>Срок, дн.</th>
+                <th>Месяц</th><th>Статус</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty">
+    <h2>Нет данных</h2>
+    <p>Загрузите Excel-файл с заявками или нажмите «Демо-данные».</p>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   ДЕМО-ДАННЫЕ
+   ============================================================ */
+const SAMPLE_DATA = [
+  { ИД:270361, Филиал:"ПЭС", РЭС:"основная сеть 110 35 кВ", объект:"ПС 110 кВ Атня ВЛ 10 кВ №5 Атня", открытие_заявки:"2026-04-28 10:00:00", категория:"неотложная", регламент:0, месяц_название:"апрель", "соответствие регламенту":"по_регламенту" },
+  { ИД:278541, Филиал:"КамЭС", РЭС:"основная сеть 110 35 кВ", объект:"ПС 110 кВ Тюлячи ВЛ 10 кВ ф.07", открытие_заявки:"2026-09-23 09:36:00", категория:"плановая", регламент:17, месяц_название:"сентябрь", "соответствие регламенту":"по_регламенту" },
+  { ИД:278435, Филиал:"ЮВЭС", РЭС:"основная сеть 110 35 кВ", объект:"ПС 35 кВ Беркет Ключ ВЛ 10 кВ ф.39-04", открытие_заявки:"2026-09-22 10:32:44", категория:"плановая", регламент:16, месяц_название:"сентябрь", "соответствие регламенту":"по_регламенту" },
+  { ИД:266820, Филиал:"ПЭС", РЭС:"Пестречинский РЭС", объект:"ТП - 9252", открытие_заявки:"2026-01-04 13:18:00", категория:"неотложная", регламент:0, месяц_название:"январь", "соответствие регламенту":"по_регламенту" },
+  { ИД:276609, Филиал:"КЭС", РЭС:"основная сеть 110 35 кВ", объект:"ПС 110 кВ Салмачи ВЛ 10 кВ", открытие_заявки:"2026-08-19 10:00:00", категория:"неплановая", регламент:2, месяц_название:"август", "соответствие регламенту":"вне_регламента" },
+  { ИД:278836, Филиал:"КамЭС", РЭС:"Заинский РЭС", объект:"СТП - 236", открытие_заявки:"2026-09-29 09:55:00", категория:"плановая", регламент:17, месяц_название:"сентябрь", "соответствие регламенту":"по_регламенту" },
+  { ИД:275486, Филиал:"ЮВЭС", РЭС:"Нурлатский РЭС", объект:"ТП - 9 1 С 10 кВ", открытие_заявки:"2026-07-29 14:13:00", категория:"неплановая", регламент:14, месяц_название:"июль", "соответствие регламенту":"по_регламенту" },
+  { ИД:268397, Филиал:"ЮВЭС", РЭС:"основная сеть 110 35 кВ", объект:"ПС 110 кВ Аксубаево ВЛ 10 кВ ф-16", открытие_заявки:"2026-03-16 11:19:00", категория:"неплановая", регламент:4, месяц_название:"март", "соответствие регламенту":"вне_регламента" },
+  { ИД:277746, Филиал:"КЭС", РЭС:"Центральный РЭС", объект:"РТП - 95 2 С 6 кВ", открытие_заявки:"2026-09-09 05:30:00", категория:"неплановая", регламент:14, месяц_название:"сентябрь", "соответствие регламенту":"по_регламенту" },
+  { ИД:278517, Филиал:"ЮВЭС", РЭС:"Лениногорский РЭС", объект:"КТП - 232 (4) Т-1", открытие_заявки:"2026-09-23 08:40:00", категория:"неплановая", регламент:2, месяц_название:"сентябрь", "соответствие регламенту":"вне_регламента" },
+  { ИД:277971, Филиал:"ПЭС", РЭС:"Пригородный РЭС", объект:"БРП Усады ВЛ 10 кВ № 13", открытие_заявки:"2026-09-11 10:40:00", категория:"неотложная", регламент:0, месяц_название:"сентябрь", "соответствие регламенту":"по_регламенту" },
+  { ИД:269142, Филиал:"ЮВЭС", РЭС:"Алексеевский РЭС", объект:"ТП - 859 Т-1", открытие_заявки:"2026-04-03 13:15:00", категория:"плановая", регламент:27, месяц_название:"апрель", "соответствие регламенту":"по_регламенту" },
+  { ИД:274533, Филиал:"ЮВЭС", РЭС:"основная сеть 110 35 кВ", объект:"ПС 110 кВ Антоновка Ф-06", открытие_заявки:"2026-07-14 10:44:00", категория:"неплановая", регламент:14, месяц_название:"июль", "соответствие регламенту":"по_регламенту" },
+  { ИД:275015, Филиал:"КамЭС", РЭС:"основная сеть 110 35 кВ", объект:"ПС 110 кВ Поселковая ВЛ 6 кВ Ф-14", открытие_заявки:"2026-07-22 10:53:00", категория:"плановая", регламент:12, месяц_название:"июль", "соответствие регламенту":"по_регламенту" },
+  { ИД:277062, Филиал:"ЮВЭС", РЭС:"Лениногорский РЭС", объект:"ТП - 56 (5) КЛ 0,4 кВ Л-4", открытие_заявки:"2026-08-26 09:00:00", категория:"неплановая", регламент:16, месяц_название:"август", "соответствие регламенту":"по_регламенту" },
+  { ИД:278682, Филиал:"ПЭС", РЭС:"Зеленодольский РЭС", объект:"КТП - 4857", открытие_заявки:"2026-09-25 08:40:00", категория:"неплановая", регламент:2, месяц_название:"сентябрь", "соответствие регламенту":"вне_регламента" },
+  { ИД:278813, Филиал:"КамЭС", РЭС:"основная сеть 110 35 кВ", объект:"ПС 110 кВ Салауши В ВЛ 10 кВ ф.03", открытие_заявки:"2026-09-29 08:23:37", категория:"неплановая", регламент:2, месяц_название:"сентябрь", "соответствие регламенту":"вне_регламента" },
+  { ИД:279064, Филиал:"ПЭС", РЭС:"Арский РЭС", объект:"ТП - 1168 ВЛ 0,4 кВ №1", открытие_заявки:"2026-10-02 09:05:00", категория:"плановая", регламент:15, месяц_название:"октябрь", "соответствие регламенту":"по_регламенту" },
+  { ИД:274586, Филиал:"КЭС", РЭС:"Центральный РЭС", объект:"ТП - 174 1 С 0,4 кВ", открытие_заявки:"2026-07-15 09:55:55", категория:"неплановая", регламент:38, месяц_название:"июль", "соответствие регламенту":"по_регламенту" },
+  { ИД:272348, Филиал:"КамЭС", РЭС:"основная сеть 110 35 кВ", объект:"ПС 35 кВ Атомстрой-2 ВЛ 6 кВ Ф-3", открытие_заявки:"2026-06-04 12:26:00", категория:"плановая", регламент:11, месяц_название:"июнь", "соответствие регламенту":"вне_регламента" }
+];
+
+/* ============================================================
+   ГЛОБАЛЬНЫЕ
+   ============================================================ */
+let RAW_DATA = [];
+let FILTERED = [];
+let ACTIVE_TAB = '__all__';
+const charts = {};
+const MONTH_ORDER = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+
+// Значения фильтров
+const F = {
+  searchObject: '',
+  searchId: [],
+  month: [],      // массив
+  category: [],   // массив
+  status: [],     // массив
+  res: []         // массив — фильтр РЭС внутри вкладки
+};
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 2800);
+}
+
+/* ============================================================
+   ЧТЕНИЕ EXCEL
+   ============================================================ */
+document.getElementById('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const wb = XLSX.read(evt.target.result, { type: 'array', cellDates: true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(ws, { defval: null, raw: false });
+      RAW_DATA = normalizeData(json);
+      ACTIVE_TAB = '__all__';
+      resetFilterState();
+      initFilters();
+      initTabs();
+      applyFilters();
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      document.getElementById('subbar').style.display = 'flex';
+      toast(`Загружено ${RAW_DATA.length} заявок`, 'ok');
+    } catch (err) {
+      console.error(err);
+      toast('Ошибка чтения файла: ' + err.message, 'err');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+document.getElementById('loadSampleBtn').addEventListener('click', () => {
+  RAW_DATA = normalizeData(SAMPLE_DATA);
+  ACTIVE_TAB = '__all__';
+  resetFilterState();
+  initFilters();
+  initTabs();
+  applyFilters();
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('subbar').style.display = 'flex';
+  toast(`Загружено ${RAW_DATA.length} демо-заявок`, 'ok');
+});
+
+function resetFilterState() {
+  F.searchObject = '';
+  F.searchId = [];
+  F.month = [];
+  F.category = [];
+  F.status = [];
+  F.res = [];
+  document.getElementById('searchObject').value = '';
+  document.getElementById('searchId').value = '';
+}
+
+/* ============================================================
+   НОРМАЛИЗАЦИЯ
+   ============================================================ */
+function findKey(obj, candidates) {
+  const keys = Object.keys(obj);
+  for (const cand of candidates) {
+    const target = cand.toLowerCase().replace(/[\s_]+/g, '');
+    for (const k of keys) {
+      const norm = k.trim().toLowerCase().replace(/[\s_]+/g, '');
+      if (norm === target) return k;
+    }
+  }
+  return null;
+}
+
+function normalizeData(rows) {
+  return rows.map(r => {
+    const kId = findKey(r, ['ид','id','№']);
+    const kBranch = findKey(r, ['филиал','branch']);
+    const kRes = findKey(r, ['рэс','res']);
+    const kObj = findKey(r, ['объект','object']);
+    const kDate = findKey(r, ['открытие_заявки','открытие заявки','открытие']);
+    const kCat = findKey(r, ['категория','category']);
+    const kDur = findKey(r, ['регламент','срок','duration']);
+    const kMonth = findKey(r, ['месяц_название','месяц название','месяц','month']);
+    const kStatus = findKey(r, ['соответствие_регламенту','соответствие регламенту','статус','status']);
+
+    const dateStr = kDate ? r[kDate] : null;
+    const dateObj = dateStr ? parseDate(dateStr) : null;
+
+    let status = kStatus ? r[kStatus] : '—';
+    status = String(status ?? '—').trim().toLowerCase().replace(/\s+/g, '_');
+
+    return {
+      id: kId ? String(r[kId]).trim() : '',
+      branch: (kBranch ? r[kBranch] : null) || '—',
+      res: (kRes ? r[kRes] : null) || '—',
+      object: (kObj ? r[kObj] : null) || '—',
+      date: dateObj,
+      dateStr: dateObj ? formatDate(dateObj) : '—',
+      category: (kCat ? r[kCat] : null) || '—',
+      duration: Number(kDur ? r[kDur] : 0) || 0,
+      month: (kMonth ? r[kMonth] : null) || (dateObj ? MONTH_ORDER[dateObj.getMonth()] : '—'),
+      status
+    };
+  });
+}
+
+function parseDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) return v;
+  const s = String(v).trim();
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T]?(\d{2})?:?(\d{2})?:?(\d{2})?/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
+  const m2 = s.match(/^(\d{2})\.(\d{2})\.(\d{4})/);
+  if (m2) return new Date(+m2[3], +m2[2]-1, +m2[1]);
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+function formatDate(d) {
+  const pad = n => String(n).padStart(2,'0');
+  return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* ============================================================
+   КАСТОМНЫЙ MULTI-SELECT
+   ============================================================ */
+const MS = {}; // Храним состояние компонентов
+
+function createMultiSelect(containerId, options, selectedArr, onChange, placeholder = 'Все') {
+  const el = document.getElementById(containerId);
+  el.classList.add('ms');
+  el.innerHTML = '';
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'ms-btn';
+  btn.innerHTML = `<span class="ms-label"></span><span class="ms-caret">▼</span>`;
+
+  const panel = document.createElement('div');
+  panel.className = 'ms-panel';
+
+  const actions = document.createElement('div');
+  actions.className = 'ms-actions';
+  const allBtn = document.createElement('button');
+  allBtn.type = 'button'; allBtn.textContent = 'Все';
+  const noneBtn = document.createElement('button');
+  noneBtn.type = 'button'; noneBtn.textContent = 'Снять';
+  actions.appendChild(allBtn);
+  actions.appendChild(noneBtn);
+  panel.appendChild(actions);
+
+  options.forEach(opt => {
+    const item = document.createElement('label');
+    item.className = 'ms-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = opt.value;
+    cb.checked = selectedArr.includes(opt.value);
+    cb.addEventListener('change', () => {
+      const idx = selectedArr.indexOf(opt.value);
+      if (cb.checked) { if (idx === -1) selectedArr.push(opt.value); }
+      else { if (idx !== -1) selectedArr.splice(idx, 1); }
+      updateLabel();
+      onChange();
+    });
+    const txt = document.createElement('span');
+    txt.textContent = opt.label;
+    const cnt = document.createElement('span');
+    cnt.className = 'cnt';
+    cnt.textContent = opt.count ?? '';
+    item.appendChild(cb);
+    item.appendChild(txt);
+    item.appendChild(cnt);
+    panel.appendChild(item);
+  });
+
+  el.appendChild(btn);
+  el.appendChild(panel);
+
+  function updateLabel() {
+    const lbl = btn.querySelector('.ms-label');
+    if (!selectedArr.length) lbl.textContent = placeholder;
+    else if (selectedArr.length === 1) lbl.textContent = selectedArr[0];
+    else lbl.textContent = `Выбрано: ${selectedArr.length}`;
+  }
+  updateLabel();
+
+  // Открытие/закрытие
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.ms.open').forEach(x => { if (x !== el) x.classList.remove('open'); });
+    el.classList.toggle('open');
+  });
+  panel.addEventListener('click', (e) => e.stopPropagation());
+
+  // Кнопки
+  allBtn.addEventListener('click', () => {
+    selectedArr.length = 0;
+    options.forEach(o => selectedArr.push(o.value));
+    panel.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+    updateLabel();
+    onChange();
+  });
+  noneBtn.addEventListener('click', () => {
+    selectedArr.length = 0;
+    panel.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    updateLabel();
+    onChange();
+  });
+
+  MS[containerId] = { updateLabel, panel, el };
+  return el;
+}
+
+// Закрытие всех панелей по клику вне
+document.addEventListener('click', () => {
+  document.querySelectorAll('.ms.open').forEach(x => x.classList.remove('open'));
+});
+
+/* ============================================================
+   ФИЛЬТРЫ — инициализация
+   ============================================================ */
+function initFilters() {
+  // Месяцы
+  const monthsSet = new Set(RAW_DATA.map(r => r.month));
+  const months = MONTH_ORDER.filter(m => monthsSet.has(m));
+  F.month = months.slice(); // по умолчанию — все
+  createMultiSelect('msMonth',
+    months.map(m => ({ value: m, label: m, count: RAW_DATA.filter(r => r.month === m).length })),
+    F.month,
+    () => applyFilters(),
+    'Все'
+  );
+
+  // Категории
+  const cats = [...new Set(RAW_DATA.map(r => r.category))].sort();
+  F.category = cats.slice();
+  createMultiSelect('msCategory',
+    cats.map(c => ({ value: c, label: c, count: RAW_DATA.filter(r => r.category === c).length })),
+    F.category,
+    () => applyFilters(),
+    'Все'
+  );
+
+  // Регламент
+  const statuses = [...new Set(RAW_DATA.map(r => r.status))].filter(Boolean).sort();
+  F.status = statuses.slice();
+  createMultiSelect('msStatus',
+    statuses.map(s => ({ value: s, label: s, count: RAW_DATA.filter(r => r.status === s).length })),
+    F.status,
+    () => applyFilters(),
+    'Все'
+  );
+
+  // РЭС — зависит от активной вкладки
+  initResSelect();
+
+  // Поиск
+  const searchObj = document.getElementById('searchObject');
+  searchObj.oninput = () => {
+    F.searchObject = searchObj.value.trim().toLowerCase();
+    applyFilters();
+  };
+  const searchId = document.getElementById('searchId');
+  searchId.oninput = () => {
+    F.searchId = searchId.value
+      .split(/[,\s;]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+    applyFilters();
+  };
+}
+
+function initResSelect() {
+  // РЭС берём из тех филиалов, что сейчас доступны (по активной вкладке)
+  const source = ACTIVE_TAB === '__all__'
+    ? RAW_DATA
+    : RAW_DATA.filter(r => r.branch === ACTIVE_TAB);
+
+  const resSet = new Set(source.map(r => r.res));
+  const resList = [...resSet].sort();
+
+  // Сбрасываем предыдущий выбор, ставим все
+  F.res = resList.slice();
+
+  createMultiSelect('msRes',
+    resList.map(r => ({ value: r, label: r, count: source.filter(x => x.res === r).length })),
+    F.res,
+    () => applyFilters(),
+    'Все РЭС'
+  );
+
+  // Обновим информацию
+  const info = document.getElementById('subbarInfo');
+  info.textContent = `РЭСов: ${resList.length}`;
+}
+
+/* ============================================================
+   ВКЛАДКИ
+   ============================================================ */
+function initTabs() {
+  const branches = [...new Set(RAW_DATA.map(r => r.branch))].sort();
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = '';
+  tabsEl.appendChild(makeTab('__all__', 'Все филиалы', RAW_DATA.length));
+  branches.forEach(b => {
+    const cnt = RAW_DATA.filter(r => r.branch === b).length;
+    tabsEl.appendChild(makeTab(b, b, cnt));
+  });
+  renderTabs();
+}
+
+function makeTab(key, label, count) {
+  const btn = document.createElement('button');
+  btn.className = 'tab';
+  btn.dataset.tab = key;
+  btn.innerHTML = `${escapeHtml(label)}<span class="badge">${count}</span>`;
+  btn.addEventListener('click', () => {
+    ACTIVE_TAB = key;
+    renderTabs();
+    // При смене вкладки — пересобрать список РЭС
+    initResSelect();
+    applyFilters();
+  });
+  return btn;
+}
+
+function renderTabs() {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === ACTIVE_TAB);
+  });
+}
+
+/* ============================================================
+   СБРОС ФИЛЬТРОВ
+   ============================================================ */
+document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+  ACTIVE_TAB = '__all__';
+  resetFilterState();
+  initFilters();
+  initTabs();
+  applyFilters();
+  toast('Фильтры сброшены');
+});
+
+/* ============================================================
+   ФИЛЬТРАЦИЯ
+   ============================================================ */
+function applyFilters() {
+  FILTERED = RAW_DATA.filter(r => {
+    if (ACTIVE_TAB !== '__all__' && r.branch !== ACTIVE_TAB) return false;
+
+    // Множественные фильтры
+    if (F.month.length && !F.month.includes(r.month)) return false;
+    if (F.category.length && !F.category.includes(r.category)) return false;
+    if (F.status.length && !F.status.includes(r.status)) return false;
+    if (F.res.length && !F.res.includes(r.res)) return false;
+
+    // Поиск по наименованию
+    if (F.searchObject && !String(r.object).toLowerCase().includes(F.searchObject)) return false;
+
+    // Поиск по ИД
+    if (F.searchId.length) {
+      const idStr = String(r.id);
+      const match = F.searchId.some(q => idStr === q || idStr.includes(q));
+      if (!match) return false;
+    }
+
+    return true;
+  });
+  render();
+}
+
+/* ============================================================
+   РЕНДЕР
+   ============================================================ */
+function render() {
+  renderKPIs();
+  renderSummary();
+  renderCharts();
+  renderTable();
+}
+
+function renderKPIs() {
+  const total = FILTERED.length;
+  const plan = FILTERED.filter(r => r.category === 'плановая').length;
+  const unplan = FILTERED.filter(r => r.category === 'неплановая').length;
+  const urgent = FILTERED.filter(r => r.category === 'неотложная').length;
+  const ok = FILTERED.filter(r => r.status === 'по_регламенту').length;
+  const bad = FILTERED.filter(r => r.status === 'вне_регламента').length;
+  const badPct = total ? (bad / total * 100).toFixed(1) : 0;
+  const avgDuration = total ? (FILTERED.reduce((s,r) => s + r.duration, 0) / total).toFixed(1) : 0;
+
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><div class="label">Всего заявок</div><div class="value">${total}</div><div class="sub">в выборке</div></div>
+    <div class="kpi purple"><div class="label">Плановые</div><div class="value">${plan}</div><div class="sub">${total ? (plan/total*100).toFixed(1) : 0}%</div></div>
+    <div class="kpi amber"><div class="label">Неплановые</div><div class="value">${unplan}</div><div class="sub">${total ? (unplan/total*100).toFixed(1) : 0}%</div></div>
+    <div class="kpi"><div class="label">Неотложные</div><div class="value">${urgent}</div><div class="sub">${total ? (urgent/total*100).toFixed(1) : 0}%</div></div>
+    <div class="kpi green"><div class="label">По регламенту</div><div class="value">${ok}</div><div class="sub">${total ? (ok/total*100).toFixed(1) : 0}%</div></div>
+    <div class="kpi red"><div class="label">Вне регламента</div><div class="value">${bad}</div><div class="sub">${badPct}%</div></div>
+    <div class="kpi green"><div class="label">Средний срок</div><div class="value">${avgDuration}</div><div class="sub">дней</div></div>
+  `;
+}
+
+function renderSummary() {
+  const title = ACTIVE_TAB === '__all__' ? 'Все филиалы' : ACTIVE_TAB;
+  document.getElementById('summaryTitle').textContent = '— ' + title;
+  const total = FILTERED.length;
+  if (!total) {
+    document.getElementById('summaryBlock').innerHTML = '<i>Нет данных по текущим фильтрам.</i>';
+    return;
+  }
+  const resCount = groupCount(FILTERED, 'res');
+  const topRes = Object.entries(resCount).sort((a,b) => b[1]-a[1]).slice(0,5);
+  const branches = groupCount(FILTERED, 'branch');
+  const ok = FILTERED.filter(r => r.status === 'по_регламенту').length;
+  const bad = FILTERED.filter(r => r.status === 'вне_регламента').length;
+  const avg = (FILTERED.reduce((s,r) => s + r.duration, 0) / total).toFixed(1);
+  document.getElementById('summaryBlock').innerHTML = `
+    <b>Всего заявок:</b> ${total} &nbsp;|&nbsp;
+    <b>По регламенту:</b> ${ok} (${(ok/total*100).toFixed(1)}%) &nbsp;|&nbsp;
+    <b>Вне регламента:</b> ${bad} (${(bad/total*100).toFixed(1)}%) &nbsp;|&nbsp;
+    <b>Средний срок:</b> ${avg} дн.
+    <br><b>Филиалы в выборке:</b>
+    <ul>${Object.entries(branches).map(([k,v]) => `<li>${escapeHtml(k)} — ${v}</li>`).join('')}</ul>
+    <b>Топ-5 РЭС:</b>
+    <ul>${topRes.map(([k,v]) => `<li>${escapeHtml(k)} — ${v}</li>`).join('')}</ul>
+  `;
+}
+
+/* ============================================================
+   ГРАФИКИ
+   ============================================================ */
+function renderCharts() {
+  const byRes = groupCount(FILTERED, 'res');
+  const sortedRes = Object.entries(byRes).sort((a,b) => b[1]-a[1]).slice(0,10);
+  drawChart('chartRes', 'bar', {
+    labels: sortedRes.map(x => x[0].length > 25 ? x[0].slice(0,25)+'…' : x[0]),
+    datasets: [{ label: 'Заявок', data: sortedRes.map(x => x[1]), backgroundColor: '#7c3aed', borderRadius: 6 }]
+  }, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } });
+
+  const byCat = groupCount(FILTERED, 'category');
+  drawChart('chartCategory', 'doughnut', {
+    labels: Object.keys(byCat),
+    datasets: [{ data: Object.values(byCat), backgroundColor: ['#2563eb','#f59e0b','#ec4899','#10b981'] }]
+  }, { plugins: { legend: { position: 'bottom' } } });
+
+  const byStatus = groupCount(FILTERED, 'status');
+  drawChart('chartStatus', 'doughnut', {
+    labels: Object.keys(byStatus),
+    datasets: [{ data: Object.values(byStatus), backgroundColor: ['#10b981','#ef4444','#f59e0b'] }]
+  }, { plugins: { legend: { position: 'bottom' } } });
+
+  let sourceMonths = [...new Set(FILTERED.map(r => r.month))].filter(m => m && m !== '—');
+  if (!sourceMonths.length) {
+    sourceMonths = [...new Set(RAW_DATA.map(r => r.month))].filter(m => m && m !== '—');
+  }
+  const monthIdx = m => { const i = MONTH_ORDER.indexOf(String(m).toLowerCase()); return i === -1 ? 999 : i; };
+  sourceMonths.sort((a, b) => monthIdx(a) - monthIdx(b));
+
+  const okData = sourceMonths.map(m => FILTERED.filter(r => r.month === m && r.status === 'по_регламенту').length);
+  const badData = sourceMonths.map(m => FILTERED.filter(r => r.month === m && r.status === 'вне_регламента').length);
+
+  drawChart('chartMonth', 'bar', {
+    labels: sourceMonths,
+    datasets: [
+      { label: 'по_регламенту', data: okData, backgroundColor: '#10b981', borderRadius: 4 },
+      { label: 'вне_регламента', data: badData, backgroundColor: '#ef4444', borderRadius: 4 }
+    ]
+  }, {
+    plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false } },
+    scales: {
+      x: { stacked: true, grid: { display: false }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 } },
+      y: { stacked: true, beginAtZero: true, ticks: { precision: 0, stepSize: 1 } }
+    }
+  });
+
+  const cats = [...new Set(FILTERED.map(r => r.category))];
+  const avgDur = cats.map(c => {
+    const arr = FILTERED.filter(r => r.category === c);
+    return arr.length ? +(arr.reduce((s,r) => s + r.duration, 0) / arr.length).toFixed(1) : 0;
+  });
+  drawChart('chartDuration', 'bar', {
+    labels: cats,
+    datasets: [{ label: 'Средний срок, дн.', data: avgDur, backgroundColor: ['#2563eb','#f59e0b','#ec4899','#10b981'], borderRadius: 6 }]
+  }, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } });
+}
+
+function drawChart(canvasId, type, data, options = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (charts[canvasId]) { try { charts[canvasId].destroy(); } catch(e){} charts[canvasId] = null; }
+  try {
+    charts[canvasId] = new Chart(ctx, {
+      type, data,
+      options: { responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, ...options }
+    });
+  } catch (err) {
+    console.error('Chart error [' + canvasId + ']:', err);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Нет данных для отображения', canvas.width / 2, canvas.height / 2);
+  }
+}
+
+function groupCount(arr, key) {
+  return arr.reduce((acc, r) => { acc[r[key]] = (acc[r[key]] || 0) + 1; return acc; }, {});
+}
+
+/* ============================================================
+   ТАБЛИЦА
+   ============================================================ */
+function renderTable() {
+  const tbody = document.querySelector('#dataTable tbody');
+  const rows = FILTERED.slice(0, 1000);
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.id) || '—'}</td>
+      <td>${escapeHtml(r.branch)}</td>
+      <td>${escapeHtml(r.res)}</td>
+      <td title="${escapeHtml(r.object)}">${truncate(r.object, 45)}</td>
+      <td>${r.dateStr}</td>
+      <td>${catTag(r.category)}</td>
+      <td>${r.duration}</td>
+      <td>${escapeHtml(r.month)}</td>
+      <td>${statusTag(r.status)}</td>
+    </tr>
+  `).join('');
+  document.getElementById('tableCount').textContent = `показано ${rows.length} из ${FILTERED.length}`;
+}
+
+function catTag(c) {
+  const map = { 'плановая': 'cat-plan', 'неплановая': 'cat-unplan', 'неотложная': 'cat-urgent' };
+  return `<span class="tag ${map[c] || ''}">${escapeHtml(c)}</span>`;
+}
+function statusTag(s) {
+  if (s === 'по_регламенту') return `<span class="tag ok">по_регламенту</span>`;
+  if (s === 'вне_регламента') return `<span class="tag bad">вне_регламента</span>`;
+  return `<span class="tag">${escapeHtml(s)}</span>`;
+}
+function truncate(s, n) { return !s ? '—' : (s.length > n ? s.slice(0, n) + '…' : s); }
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ============================================================
+   ЭКСПОРТ
+   ============================================================ */
+function getReportMeta() {
+  const tab = ACTIVE_TAB === '__all__' ? 'Все филиалы' : ACTIVE_TAB;
+  const fmt = arr => !arr.length ? 'все' : (arr.length === 1 ? arr[0] : `${arr.length} выбр.`);
+  const m = F.month.length ? fmt(F.month) : 'все';
+  const c = F.category.length ? fmt(F.category) : 'все';
+  const s = F.status.length ? fmt(F.status) : 'все';
+  const r = F.res.length ? fmt(F.res) : 'все';
+  const searchObj = F.searchObject || '—';
+  const searchId = F.searchId.length ? F.searchId.join(',') : '—';
+  return { tab, m, c, s, r, searchObj, searchId, total: FILTERED.length };
+}
+
+document.getElementById('exportXlsxBtn').addEventListener('click', () => {
+  if (!FILTERED.length) { toast('Нет данных для выгрузки', 'err'); return; }
+  const meta = getReportMeta();
+  const wb = XLSX.utils.book_new();
+
+  const wsSummary = XLSX.utils.aoa_to_sheet([
+    ['Аналитический отчёт по заявкам'],
+    ['Филиал:', meta.tab],
+    ['Месяц:', meta.m],
+    ['Категория:', meta.c],
+    ['Регламент:', meta.s],
+    ['РЭС:', meta.r],
+    ['Наименование:', meta.searchObj],
+    ['ИД:', meta.searchId],
+    ['Всего заявок:', meta.total],
+    [], ...buildSummaryRows()
+  ]);
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Сводка');
+
+  const dataRows = FILTERED.map(r => ({
+    'ИД': r.id, 'Филиал': r.branch, 'РЭС': r.res, 'Объект': r.object,
+    'Открытие': r.dateStr, 'Категория': r.category, 'Срок, дн.': r.duration,
+    'Месяц': r.month, 'Статус': r.status
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataRows), 'Заявки');
+
+  const byRes = groupCount(FILTERED, 'res');
+  const resRows = Object.entries(byRes).sort((a,b) => b[1]-a[1]).map(([k,v]) => ({
+    'РЭС': k, 'Заявок': v, 'Доля, %': (v / FILTERED.length * 100).toFixed(1)
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resRows), 'По РЭСам');
+
+  const byCat = groupCount(FILTERED, 'category');
+  const catRows = Object.entries(byCat).map(([k,v]) => ({
+    'Категория': k, 'Заявок': v, 'Доля, %': (v / FILTERED.length * 100).toFixed(1)
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(catRows), 'По категориям');
+
+  const months = MONTH_ORDER.filter(m => FILTERED.some(r => r.month === m));
+  const monthRows = months.map(m => {
+    const arr = FILTERED.filter(r => r.month === m);
+    return { 'Месяц': m, 'Всего': arr.length, 'по_регламенту': arr.filter(r => r.status === 'по_регламенту').length, 'вне_регламента': arr.filter(r => r.status === 'вне_регламента').length };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(monthRows), 'По месяцам');
+
+  XLSX.writeFile(wb, `report_${sanitize(meta.tab)}_${Date.now()}.xlsx`);
+  toast('Excel-отчёт сохранён', 'ok');
+});
+
+function buildSummaryRows() {
+  const total = FILTERED.length;
+  if (!total) return [['Нет данных']];
+  const byCat = groupCount(FILTERED, 'category');
+  const byStatus = groupCount(FILTERED, 'status');
+  const avg = (FILTERED.reduce((s,r) => s + r.duration, 0) / total).toFixed(1);
+  const rows = [['Показатель', 'Значение'], ['Всего заявок', total], ['Средний срок, дн.', avg], [], ['Категория', 'Кол-во']];
+  Object.entries(byCat).forEach(([k,v]) => rows.push([k, v]));
+  rows.push([], ['Регламент', 'Кол-во']);
+  Object.entries(byStatus).forEach(([k,v]) => rows.push([k, v]));
+  return rows;
+}
+
+document.getElementById('exportHtmlBtn').addEventListener('click', () => {
+  if (!FILTERED.length) { toast('Нет данных для выгрузки', 'err'); return; }
+  const meta = getReportMeta();
+  const html = buildStandaloneHtml(meta);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `report_${sanitize(meta.tab)}_${Date.now()}.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('HTML-отчёт сохранён', 'ok');
+});
+
+function buildStandaloneHtml(meta) {
+  const total = FILTERED.length;
+  const byRes = groupCount(FILTERED, 'res');
+  const byCat = groupCount(FILTERED, 'category');
+  const byStatus = groupCount(FILTERED, 'status');
+  const months = MONTH_ORDER.filter(m => FILTERED.some(r => r.month === m));
+  const avg = (FILTERED.reduce((s,r) => s + r.duration, 0) / total).toFixed(1);
+
+  const trs = FILTERED.map(r => `<tr><td>${r.id ?? ''}</td><td>${escapeHtml(r.branch)}</td><td>${escapeHtml(r.res)}</td><td>${escapeHtml(r.object)}</td><td>${r.dateStr}</td><td>${escapeHtml(r.category)}</td><td>${r.duration}</td><td>${escapeHtml(r.month)}</td><td>${escapeHtml(r.status)}</td></tr>`).join('');
+  const resRows = Object.entries(byRes).sort((a,b) => b[1]-a[1]).map(([k,v]) => `<tr><td>${escapeHtml(k)}</td><td>${v}</td><td>${(v/total*100).toFixed(1)}%</td></tr>`).join('');
+  const catRows = Object.entries(byCat).map(([k,v]) => `<tr><td>${escapeHtml(k)}</td><td>${v}</td><td>${(v/total*100).toFixed(1)}%</td></tr>`).join('');
+  const statusRows = Object.entries(byStatus).map(([k,v]) => `<tr><td>${escapeHtml(k)}</td><td>${v}</td><td>${(v/total*100).toFixed(1)}%</td></tr>`).join('');
+  const monthRows = months.map(m => {
+    const arr = FILTERED.filter(r => r.month === m);
+    return `<tr><td>${escapeHtml(m)}</td><td>${arr.length}</td><td>${arr.filter(r=>r.status==='по_регламенту').length}</td><td>${arr.filter(r=>r.status==='вне_регламента').length}</td></tr>`;
+  }).join('');
+
+  return `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Отчёт — ${escapeHtml(meta.tab)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; margin: 0; padding: 24px; color: #1f2937; background: #fff; width: 1000px; margin: 0 auto; }
+  h1 { color: #1e3a8a; border-bottom: 3px solid #2563eb; padding-bottom: 8px; font-size: 22px; }
+  h2 { color: #2563eb; margin-top: 28px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; font-size: 17px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 12px; table-layout: fixed; word-wrap: break-word; }
+  th, td { border: 1px solid #e5e7eb; padding: 5px 7px; text-align: left; }
+  th { background: #f3f4f6; font-weight: 700; }
+  tr:nth-child(even) { background: #fafafa; }
+  .meta { background: #eff6ff; padding: 12px 16px; border-radius: 8px; margin: 12px 0; font-size: 13px; }
+  .kpi { display: inline-block; background: #f9fafb; border-left: 4px solid #2563eb; padding: 10px 16px; margin: 4px 8px 4px 0; border-radius: 6px; font-size: 12px; }
+  .kpi b { display: block; font-size: 20px; color: #1e3a8a; }
+  footer { margin-top: 32px; color: #6b7280; font-size: 12px; text-align: center; }
+  @media print { body { width: auto; margin: 0; padding: 12mm; } h2 { page-break-after: avoid; } tr { page-break-inside: avoid; } }
+</style></head><body>
+<h1>📊 Аналитический отчёт по заявкам</h1>
+<div class="meta">
+  <b>Филиал:</b> ${escapeHtml(meta.tab)} |
+  <b>Месяц:</b> ${escapeHtml(meta.m)} |
+  <b>Категория:</b> ${escapeHtml(meta.c)} |
+  <b>Регламент:</b> ${escapeHtml(meta.s)} |
+  <b>РЭС:</b> ${escapeHtml(meta.r)}<br>
+  <b>Наименование:</b> ${escapeHtml(meta.searchObj)} |
+  <b>ИД:</b> ${escapeHtml(meta.searchId)} |
+  <b>Сформирован:</b> ${new Date().toLocaleString('ru-RU')}
+</div>
+<div>
+  <div class="kpi">Всего<b>${total}</b></div>
+  <div class="kpi">Ср. срок, дн.<b>${avg}</b></div>
+  <div class="kpi">По регламенту<b>${FILTERED.filter(r=>r.status==='по_регламенту').length}</b></div>
+  <div class="kpi">Вне регламента<b>${FILTERED.filter(r=>r.status==='вне_регламента').length}</b></div>
+</div>
+<h2>Свод по РЭСам</h2><table><thead><tr><th>РЭС</th><th>Заявок</th><th>Доля</th></tr></thead><tbody>${resRows}</tbody></table>
+<h2>Свод по категориям</h2><table><thead><tr><th>Категория</th><th>Заявок</th><th>Доля</th></tr></thead><tbody>${catRows}</tbody></table>
+<h2>Свод по регламенту</h2><table><thead><tr><th>Регламент</th><th>Заявок</th><th>Доля</th></tr></thead><tbody>${statusRows}</tbody></table>
+<h2>Свод по месяцам</h2><table><thead><tr><th>Месяц</th><th>Всего</th><th>по_регламенту</th><th>вне_регламента</th></tr></thead><tbody>${monthRows}</tbody></table>
+<h2>Детальная таблица</h2><table><thead><tr><th>ИД</th><th>Филиал</th><th>РЭС</th><th>Объект</th><th>Открытие</th><th>Категория</th><th>Срок</th><th>Месяц</th><th>Статус</th></tr></thead><tbody>${trs}</tbody></table>
+<footer>Отчёт сформирован автоматически аналитическим дашбордом</footer></body></html>`;
+}
+
+document.getElementById('exportPdfBtn').addEventListener('click', () => {
+  if (!FILTERED.length) { toast('Нет данных для выгрузки', 'err'); return; }
+  const meta = getReportMeta();
+  const html = buildStandaloneHtml(meta);
+
+  const win = window.open('', '_blank');
+  if (!win) { toast('Разрешите всплывающие окна для экспорта PDF', 'err'); return; }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { try { win.print(); } catch (e) { console.error(e); } }, 500);
+  toast('Открыто окно печати — выберите «Сохранить как PDF»', 'ok');
+});
+
+function sanitize(s) { return String(s).replace(/[^a-zA-Zа-яА-Я0-9_-]+/g, '_').slice(0, 40); }
+</script>
+</body>
+</html>
